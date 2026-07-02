@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://ncxagsg4blat"]
+
+[ext_resource type="Texture2D" uid="uid://o7wplowvo2af" path="res://Assets/TitleScreen.png" id="1_6dnvh"]
+[ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="2_d31s6"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uqg10"]
+bg_color = Color(0.08, 0, 0.038666688, 0.043137256)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+corner_detail = 11
+shadow_color = Color(0.13, 0, 0.06283336, 0.6156863)
+shadow_size = 15
+shadow_offset = Vector2(10, 10)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1sjca"]
+bg_color = Color(0.16, 0.152, 0, 0.42352942)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.28555712, 0.25690308, 0.12272913, 0.6)
+shadow_size = 20
+shadow_offset = Vector2(10, 10)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_77okg"]
+bg_color = Color(0, 0, 0, 1)
+
+[node name="TitleScreen" type="Node2D" unique_id=696023902]
+
+[node name="BG" type="TextureRect" parent="." unique_id=1515057322]
+modulate = Color(0.96862745, 0.99215686, 0.85882354, 1)
+offset_right = 1168.0
+offset_bottom = 656.0
+texture = ExtResource("1_6dnvh")
+
+[node name="StartGame" type="Button" parent="BG" unique_id=194819855]
+top_level = true
+layout_mode = 0
+offset_left = 782.0
+offset_top = 124.0
+offset_right = 1067.0
+offset_bottom = 256.0
+theme_override_colors/font_color = Color(0.5883014, 0.76452315, 0.76158607, 1)
+theme_override_fonts/font = ExtResource("2_d31s6")
+theme_override_font_sizes/font_size = 58
+theme_override_styles/normal = SubResource("StyleBoxFlat_uqg10")
+theme_override_styles/hover = SubResource("StyleBoxFlat_1sjca")
+text = "Delve In"
+
+[node name="Exit" type="Button" parent="BG" unique_id=2043572895]
+layout_mode = 0
+offset_left = 872.0
+offset_top = 307.0
+offset_right = 992.0
+offset_bottom = 349.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_77okg")
+text = "Leave"

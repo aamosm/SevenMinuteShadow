@@ -2,7 +2,6 @@
 
 [ext_resource type="ArrayMesh" uid="uid://dpqcjcx365lb4" path="res://Assets/radio/radio.obj" id="1_ebcc0"]
 [ext_resource type="Script" uid="uid://brfgktfnqvuut" path="res://Screen/cutscene.gd" id="1_v4fuo"]
-[ext_resource type="Texture2D" uid="uid://c7n6ar0f1jddi" path="res://Assets/950x350-black-solid-color-background.jpg" id="2_s6wta"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_s6wta"]
 size = Vector2(1, 1)
@@ -113,12 +112,14 @@ _data = {
 script = ExtResource("1_v4fuo")
 
 [node name="Node2D" type="Node2D" parent="." unique_id=636465503]
-visible = false
 
-[node name="950x350BlackSolidColorBackground" type="Sprite2D" parent="Node2D" unique_id=619646205]
-position = Vector2(576.5, 321)
-scale = Vector2(1.2494738, 2.3028572)
-texture = ExtResource("2_s6wta")
+[node name="Mailman" type="Node2D" parent="Node2D" unique_id=1236791565]
+
+[node name="ConstructionWorker" type="Node2D" parent="Node2D" unique_id=1486976879]
+
+[node name="Farmer" type="Node2D" parent="Node2D" unique_id=2132208963]
+
+[node name="Child" type="Node2D" parent="Node2D" unique_id=325319121]
 
 [node name="Node3D" type="Node3D" parent="." unique_id=872639717]
 

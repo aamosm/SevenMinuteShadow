@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://o7wplowvo2af" path="res://Assets/TitleScreen.png" id="1_6dnvh"]
 [ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="2_d31s6"]
+[ext_resource type="Script" uid="uid://cwyfjr0fjhxoh" path="res://Screen/exit.gd" id="3_d31s6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uqg10"]
 bg_color = Color(0.08, 0, 0.038666688, 0.043137256)
@@ -57,3 +58,6 @@ offset_right = 992.0
 offset_bottom = 349.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_77okg")
 text = "Leave"
+script = ExtResource("3_d31s6")
+
+[connection signal="pressed" from="BG/Exit" to="BG/Exit" method="_on_pressed"]

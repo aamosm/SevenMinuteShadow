@@ -1,3 +1,147 @@
 [gd_scene format=3 uid="uid://dfevo7qm8ipm0"]
 
-[node name="cutscene" type="Node2D" unique_id=332083928]
+[ext_resource type="ArrayMesh" uid="uid://dpqcjcx365lb4" path="res://Assets/radio/radio.obj" id="1_ebcc0"]
+[ext_resource type="Script" uid="uid://brfgktfnqvuut" path="res://Screen/cutscene.gd" id="1_v4fuo"]
+[ext_resource type="Texture2D" uid="uid://c7n6ar0f1jddi" path="res://Assets/950x350-black-solid-color-background.jpg" id="2_s6wta"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_s6wta"]
+size = Vector2(1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v4fuo"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_q0xcs"]
+size = Vector3(3.8736725, 1, 2.5317383)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_s6wta"]
+sky_top_color = Color(0.4415246, 0.51382196, 0.60948265, 1)
+sky_horizon_color = Color(0.725616, 0.73594034, 0.7508555, 1)
+ground_horizon_color = Color(0.725616, 0.73594034, 0.7508555, 1)
+
+[sub_resource type="Sky" id="Sky_v4fuo"]
+sky_material = SubResource("ProceduralSkyMaterial_s6wta")
+
+[sub_resource type="Environment" id="Environment_q0xcs"]
+background_mode = 2
+sky = SubResource("Sky_v4fuo")
+
+[sub_resource type="Animation" id="Animation_s6wta"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node3D/Camera3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.68963623, -0.06274414, 2.2807617)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node3D/Camera3D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -0.56855947, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node3D/Camera3D:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_v4fuo"]
+resource_name = "Scene"
+length = 5.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Node3D/Camera3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.6667, 5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.68963623, -0.06274414, 2.2807617), Vector3(-0.68963623, 0.1965332, 2.2807617), Vector3(-0.61169434, 0.016113281, 1.1427002)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Node3D/Camera3D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1.6667, 5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, -0.56855947, 0), Vector3(0, -0.48976752, 0), Vector3(0, -0.72295105, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Node3D/Camera3D:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1.6667, 5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1, 1, 1), Vector3(1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_q0xcs"]
+_data = {
+&"RESET": SubResource("Animation_s6wta"),
+&"Scene": SubResource("Animation_v4fuo")
+}
+
+[node name="Node" type="Node" unique_id=1323932085]
+script = ExtResource("1_v4fuo")
+
+[node name="Node2D" type="Node2D" parent="." unique_id=636465503]
+visible = false
+
+[node name="950x350BlackSolidColorBackground" type="Sprite2D" parent="Node2D" unique_id=619646205]
+position = Vector2(576.5, 321)
+scale = Vector2(1.2494738, 2.3028572)
+texture = ExtResource("2_s6wta")
+
+[node name="Node3D" type="Node3D" parent="." unique_id=872639717]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=1837602881]
+transform = Transform3D(4, 0, 0, 0, -1.7484555e-07, -4, 0, 4, -1.7484555e-07, 0, -0.045837402, -0.00012207031)
+mesh = SubResource("PlaneMesh_s6wta")
+
+[node name="Radio" type="MeshInstance3D" parent="Node3D" unique_id=1305281883]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13064861, -0.04899328, 0.6532898)
+mesh = ExtResource("1_ebcc0")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Node3D" unique_id=609298644]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.027000427, -0.54122734, 0.8820175)
+material_overlay = SubResource("StandardMaterial3D_v4fuo")
+mesh = SubResource("BoxMesh_q0xcs")
+
+[node name="Camera3D" type="Camera3D" parent="Node3D" unique_id=264866068]
+transform = Transform3D(0.8426775, 0, -0.5384187, 0, 1, 0, 0.5384187, 0, 0.8426775, -0.68963623, -0.06274414, 2.2807617)
+current = true
+fov = 16.722414
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Node3D" unique_id=1859222037]
+environment = SubResource("Environment_q0xcs")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=523938274]
+libraries/ = SubResource("AnimationLibrary_q0xcs")

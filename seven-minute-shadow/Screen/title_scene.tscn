@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://o7wplowvo2af" path="res://Assets/TitleScreen.png" id="1_6dnvh"]
 [ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="2_d31s6"]
+[ext_resource type="Script" uid="uid://dj5nm75hq26ep" path="res://Screen/start_game.gd" id="3_7teo8"]
 [ext_resource type="Script" uid="uid://cwyfjr0fjhxoh" path="res://Screen/exit.gd" id="3_d31s6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uqg10"]
@@ -49,6 +50,7 @@ theme_override_font_sizes/font_size = 58
 theme_override_styles/normal = SubResource("StyleBoxFlat_uqg10")
 theme_override_styles/hover = SubResource("StyleBoxFlat_1sjca")
 text = "Delve In"
+script = ExtResource("3_7teo8")
 
 [node name="Exit" type="Button" parent="BG" unique_id=2043572895]
 layout_mode = 0
@@ -60,4 +62,5 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_77okg")
 text = "Leave"
 script = ExtResource("3_d31s6")
 
+[connection signal="pressed" from="BG/StartGame" to="BG/StartGame" method="_on_pressed"]
 [connection signal="pressed" from="BG/Exit" to="BG/Exit" method="_on_pressed"]

@@ -20,4 +20,4 @@ If you want to view the source code or run the project in the editor:
 1. Install **Godot Engine** (v4.x).
 2. Clone this repository:
    ```bash
-   git clone [https://github.com/aamosm/seven-minute-shadow.git](https://github.com/aamosm/seven-minute-shadow.git)
+   git clone https://github.com/aamosm/seven-minute-shadow.git

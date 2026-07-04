@@ -278,6 +278,115 @@ _data = {
 &"Scene": SubResource("Animation_v4fuo")
 }
 
+[sub_resource type="Animation" id="Animation_m3q4a"]
+resource_name = "2danimation_mailman"
+length = 6.5666666
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../Node2D/Mailman/Camera2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 6.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(809, 192), Vector2(576, 325)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../Node2D/Mailman/Camera2D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.3, 6.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [0.034906585, 0.0, 0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../Node2D/Mailman/Camera2D:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(6.5),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../Node2D/Mailman/Camera2D:zoom")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 6.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(1.8, 1.8), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_1h731"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../Node2D/Mailman/Camera2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(576, 325)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../Node2D/Mailman/Camera2D:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../Node2D/Mailman/Camera2D:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../Node2D/Mailman/Camera2D:zoom")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_6k7dl"]
+_data = {
+&"2danimation_mailman": SubResource("Animation_m3q4a"),
+&"RESET": SubResource("Animation_1h731")
+}
+
 [node name="Node" type="Node" unique_id=1323932085]
 script = ExtResource("1_v4fuo")
 
@@ -303,6 +412,10 @@ scale = Vector2(0.96875, 1.28125)
 texture = ExtResource("6_ngne1")
 
 [node name="Mailman" parent="Node2D/Mailman" unique_id=854269574 instance=ExtResource("7_m3q4a")]
+position = Vector2(-19, 345)
+
+[node name="Camera2D" type="Camera2D" parent="Node2D/Mailman" unique_id=386465800]
+position = Vector2(576, 325)
 
 [node name="ConstructionWorker" type="Node2D" parent="Node2D" unique_id=1486976879]
 
@@ -335,3 +448,7 @@ environment = SubResource("Environment_q0xcs")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=523938274]
 libraries/ = SubResource("AnimationLibrary_q0xcs")
+
+[node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1616056394]
+root_node = NodePath("../AnimationPlayer")
+libraries/ = SubResource("AnimationLibrary_6k7dl")

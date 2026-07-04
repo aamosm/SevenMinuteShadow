@@ -2,12 +2,13 @@
 
 [ext_resource type="ArrayMesh" uid="uid://dpqcjcx365lb4" path="res://Assets/radio/radio.obj" id="1_ebcc0"]
 [ext_resource type="Script" uid="uid://brfgktfnqvuut" path="res://Screen/cutscene.gd" id="1_v4fuo"]
-[ext_resource type="Texture2D" uid="uid://ca3kll57k1as0" path="res://Assets/farm objects free.png" id="2_ec3ip"]
+[ext_resource type="Texture2D" uid="uid://ca3kll57k1as0" path="res://Assets/farm objects.png" id="2_ec3ip"]
 [ext_resource type="Texture2D" uid="uid://csmt6g434080t" path="res://Assets/grass.png" id="3_ngne1"]
 [ext_resource type="Texture2D" uid="uid://bm6nyhujevsa6" path="res://Assets/objects.png" id="4_m3q4a"]
 [ext_resource type="Texture2D" uid="uid://bfely4xf8of0h" path="res://Assets/plains.png" id="5_1h731"]
 [ext_resource type="Texture2D" uid="uid://bwmnn3wqfqhuj" path="res://Assets/postoffice.png" id="6_ngne1"]
 [ext_resource type="PackedScene" uid="uid://cqjx8x83cw4jg" path="res://mailman.tscn" id="7_m3q4a"]
+[ext_resource type="Texture2D" uid="uid://ie7nmve81pp1" path="res://Assets/envelope_sealed.png" id="8_1h731"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6k7dl"]
 texture = ExtResource("2_ec3ip")
@@ -417,11 +418,10 @@ position = Vector2(-19, 345)
 [node name="Camera2D" type="Camera2D" parent="Node2D/Mailman" unique_id=386465800]
 position = Vector2(576, 325)
 
-[node name="ConstructionWorker" type="Node2D" parent="Node2D" unique_id=1486976879]
-
-[node name="Farmer" type="Node2D" parent="Node2D" unique_id=2132208963]
-
-[node name="Child" type="Node2D" parent="Node2D" unique_id=325319121]
+[node name="EnvelopeSealed" type="Sprite2D" parent="Node2D/Mailman" unique_id=1706870253]
+position = Vector2(420, 377.25)
+scale = Vector2(0.56250006, 0.48437524)
+texture = ExtResource("8_1h731")
 
 [node name="Node3D" type="Node3D" parent="." unique_id=872639717]
 

@@ -6,15 +6,29 @@ extends Node
 @onready var anim_player_2d = $AnimationPlayer2
 @onready var camera = $Node3D/Camera3D
 @onready var mailman = $Node2D/Mailman/Mailman
+@onready var envelope = $Node2D/Mailman/EnvelopeSealed
+@onready var postbox = $Node2D/Mailman/Postoffice
+
+var envelope_origin := Vector2.ZERO
+var envelope_float := false
+var float_time := 0.0
 const RADIO_DIALOGUE = preload("res://dialogue/radio.dialogue")
 
 var original_fov: float
 var original_rotation: Vector3
+func _process(delta):
+	if envelope_float:
+		float_time += delta
+		envelope.position.y = envelope_origin.y + sin(float_time * 2.5) * 6.0
 
 func _ready() -> void:
 	# Store camera defaults
+	envelope.visible = false
+	envelope.modulate.a = 0.0
+	envelope_origin = envelope.position
 	original_fov = camera.fov
 	original_rotation = camera.rotation_degrees
+
 
 	# Start state
 	node_2d.visible = false
@@ -30,7 +44,23 @@ func _ready() -> void:
 	anim_player.speed_scale = 0.3
 	anim_player.play("Scene")
 
+func send_envelope():
+	envelope.visible = true
 
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_SINE)
+	tween.set_ease(Tween.EASE_IN_OUT)
+
+	tween.tween_property(
+		envelope,
+		"global_position",
+		postbox.global_position,
+		0.8
+	)
+
+	await tween.finished
+
+	envelope.visible = false
 func _on_animation_finished(anim_name: StringName) -> void:
 	if anim_name != "Scene":
 		return
@@ -63,7 +93,23 @@ func _on_animation_finished(anim_name: StringName) -> void:
 	
 	anim_player_2d.animation_finished.connect(_on_2danimation_finished)
 	anim_player_2d.play("2danimation_mailman")
-	
+
+func reveal_envelope():
+	envelope.visible = true
+	envelope.scale = Vector2(0.2, 0.2)
+	envelope.modulate.a = 0.0
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+
+	tween.tween_property(envelope, "modulate:a", 1.0, 0.4)
+	tween.tween_property(envelope, "scale", Vector2.ONE, 0.4)
+
+	await tween.finished
+
+	envelope_origin = envelope.position
+	envelope_float = true
+
 func _on_2danimation_finished(anim_name):
 	if anim_name != "2danimation_mailman":
 		return
@@ -80,9 +126,15 @@ func _on_2danimation_finished(anim_name):
 	await get_tree().create_timer(0.4).timeout
 	
 	mailman.walk("down")
-	await get_tree().create_timer(0.25).timeout
+	await get_tree().create_timer(0.45).timeout
 	
 	mailman.walk("right")
-	await get_tree().create_timer(4).timeout
+	await get_tree().create_timer(4.43).timeout
+	
+	mailman.walk("up")
+	await get_tree().create_timer(0.2).timeout
 	# Stop
 	mailman.stop()
+	reveal_envelope()
+	await get_tree().create_timer(2.0).timeout
+	await send_envelope()

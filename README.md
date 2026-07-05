@@ -6,6 +6,12 @@ A narrative-driven, WarioWare-style microgame collection where you play through 
 
 > *"Radar has detected a lone, high-altitude aircraft approaching from the east. Command assesses it as a routine weather..."*
 
+## 🎮 About the Game
+
+This project is my first foray into Godot, heavily inspired by the chaotic, fast-paced loop of classic GBA *WarioWare* titles. Instead of a random assortment of "slop" minigames, the goal here is to ground the rapid-fire gameplay with a cohesive narrative that actually builds toward a definitive ending. 
+
+**Current Demo Build:** Features the core gameplay loop, a functional lives/heart system, and the first **2 minigames** (starting with a mail delivery task). 
+**Full Release Goal:** A total of 7 minigames, fully woven together with story and narration. It’s a small, focused project, but the narrative is meant to shine.
 
 ## Features
 

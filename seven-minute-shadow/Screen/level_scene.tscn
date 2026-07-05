@@ -60,13 +60,11 @@ theme_override_font_sizes/normal_font_size = 82
 text = "0:0"
 
 [node name="Message" type="RichTextLabel" parent="." unique_id=1495446557]
-offset_left = 755.0
-offset_top = 366.0
-offset_right = 1161.0
-offset_bottom = 624.0
+offset_left = 810.0
+offset_top = 451.0
+offset_right = 1154.0
+offset_bottom = 650.0
 theme_override_colors/default_color = Color(0.44, 0, 0, 1)
 theme_override_fonts/normal_font = ExtResource("4_iq5ff")
 theme_override_font_sizes/normal_font_size = 30
-text = "Make the day perfect
-and grant a second
-chance to the people"
+text = "All The Best"

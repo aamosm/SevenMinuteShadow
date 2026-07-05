@@ -8,6 +8,7 @@ extends Node
 @onready var mailman = $Node2D/Mailman/Mailman
 @onready var envelope = $Node2D/Mailman/EnvelopeSealed
 @onready var postbox = $Node2D/Mailman/Postoffice
+@onready var instruction_label: Label = $Node2D/Mailman/InstructionLabel
 
 var envelope_origin := Vector2.ZERO
 var envelope_float := false
@@ -19,7 +20,7 @@ var original_rotation: Vector3
 func _process(delta):
 	if envelope_float:
 		float_time += delta
-		envelope.position.y = envelope_origin.y + sin(float_time * 2.5) * 6.0
+		envelope.position.y = envelope_origin.y + sin(float_time * 4.5) * 6.0
 
 func _ready() -> void:
 	# Store camera defaults
@@ -136,5 +137,15 @@ func _on_2danimation_finished(anim_name):
 	# Stop
 	mailman.stop()
 	reveal_envelope()
-	await get_tree().create_timer(3.5).timeout
+
+	instruction_label.text = "Press space to float mail into the postbox"
+	instruction_label.visible = true
+	await wait_for_space()
+	instruction_label.visible = false
+
 	await send_envelope()
+	get_tree().change_scene_to_file("res://Screen/level_scene.tscn")
+
+func wait_for_space() -> void:
+	while not Input.is_action_just_pressed("ui_accept"):
+		await get_tree().process_frame

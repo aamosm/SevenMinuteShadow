@@ -1,9 +1,15 @@
 extends Node2D
 
-
-@export_multiline var level_message: String = "Make the day perfect and grant a second chance to the people who need it."
-@export var fade_duration: float = 0.5   # seconds for fade in / fade out
-
+@export var level_messages: Array[String] = [
+	"Press the prompted key to shoot Mail into the Postbox",
+	"level 2",
+	"",
+	"4",
+	"",
+	"level 6",
+	"7"
+]
+@export var fade_duration: float = 0.5
 
 @onready var lives_container: HBoxContainer = $Lives
 @onready var icon: TextureRect = $Lives/Icon
@@ -15,20 +21,16 @@ extends Node2D
 @onready var message_label: RichTextLabel = $Message
 
 var time_left: float
-var current_level: int  
+var current_level: int
 
 func _ready() -> void:
 	modulate.a = 0.0
-	await fade_to(1.0)   # fade IN
-
+	await fade_to(1.0)
 	current_level = Global.minigames_done + 1
 	level_label.text = "Level " + str(current_level)
-	message_label.text = level_message
-
-	await countdown(5.0)
-
-	await fade_to(0.0)   # fade OUT before switching scenes
-
+	message_label.text = level_messages[clamp(current_level - 1, 0, level_messages.size() - 1)]
+	await countdown(4.0)
+	await fade_to(0.0)
 	if Global.minigames_done < 3:
 		Global.minigames_done += 1
 		get_tree().change_scene_to_file("res://Screen/minigame_" + str(Global.minigames_done) + ".tscn")
@@ -38,32 +40,35 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	match Global.lives:
 		4:
-			icon.hide()
+			icon.show()
+			icon_2.show()
+			icon_3.show()
+			icon_4.show()
 		3:
-			icon.hide()
-			icon_2.hide()
+			icon.show()
+			icon_2.show()
+			icon_3.show()
+			icon_4.hide()
 		2:
-			icon.hide()
-			icon_2.hide()
+			icon.show()
+			icon_2.show()
 			icon_3.hide()
+			icon_4.hide()
 		1:
-			icon.hide()
+			icon.show()
 			icon_2.hide()
 			icon_3.hide()
 			icon_4.hide()
 		0:
 			lives_container.hide()
-
 	timer_label.text = str(time_left)
-	# level_label is intentionally NOT updated here. it's set once in
-
 
 func countdown(start_time: float) -> void:
 	time_left = start_time
 	while time_left > 0.0:
 		await get_tree().create_timer(0.1).timeout
-		time_left = max(time_left - 0.1, 0.0)   
-	time_left = 0.0   
+		time_left = max(time_left - 0.1, 0.0)
+	time_left = 0.0
 
 func fade_to(target_alpha: float) -> void:
 	var tween := create_tween()

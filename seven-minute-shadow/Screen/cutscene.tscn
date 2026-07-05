@@ -423,6 +423,14 @@ position = Vector2(420, 377.25)
 scale = Vector2(0.56250006, 0.48437524)
 texture = ExtResource("8_1h731")
 
+[node name="InstructionLabel" type="Label" parent="Node2D/Mailman" unique_id=869583055]
+visible = false
+offset_left = 329.0
+offset_top = 424.0
+offset_right = 415.0
+offset_bottom = 467.0
+theme_override_font_sizes/font_size = 25
+
 [node name="Node3D" type="Node3D" parent="." unique_id=872639717]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D" unique_id=1837602881]

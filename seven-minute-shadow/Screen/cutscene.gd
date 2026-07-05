@@ -136,5 +136,5 @@ func _on_2danimation_finished(anim_name):
 	# Stop
 	mailman.stop()
 	reveal_envelope()
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(3.5).timeout
 	await send_envelope()

@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://c3gpsdk84ipuw"]
+
+[ext_resource type="Script" uid="uid://bpovhoc5r6fqj" path="res://level_scene.gd" id="1_rws8s"]
+[ext_resource type="Texture2D" uid="uid://cxlfrjlsae3td" path="res://Assets/Sunrise.png" id="2_r68uk"]
+[ext_resource type="Texture2D" uid="uid://be5qdvdaid3c1" path="res://Assets/Heart.png" id="3_kroyp"]
+[ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="4_iq5ff"]
+
+[node name="LevelScene" type="Node2D" unique_id=1771080790]
+script = ExtResource("1_rws8s")
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1714148351]
+offset_left = -10.0
+offset_top = -8.0
+offset_right = 1270.0
+offset_bottom = 712.0
+texture = ExtResource("2_r68uk")
+
+[node name="Lives" type="HBoxContainer" parent="." unique_id=1998108257]
+offset_left = 309.0
+offset_top = 530.0
+offset_right = 449.0
+offset_bottom = 562.0
+offset_transform_enabled = true
+offset_transform_scale = Vector2(5, 5)
+
+[node name="Icon" type="TextureRect" parent="Lives" unique_id=763816799]
+layout_mode = 2
+texture = ExtResource("3_kroyp")
+
+[node name="Icon2" type="TextureRect" parent="Lives" unique_id=494102580]
+layout_mode = 2
+texture = ExtResource("3_kroyp")
+
+[node name="Icon3" type="TextureRect" parent="Lives" unique_id=1064752476]
+layout_mode = 2
+texture = ExtResource("3_kroyp")
+
+[node name="Icon4" type="TextureRect" parent="Lives" unique_id=1686136504]
+layout_mode = 2
+texture = ExtResource("3_kroyp")
+
+[node name="Level" type="RichTextLabel" parent="." unique_id=770893386]
+offset_left = 789.0
+offset_top = 35.0
+offset_right = 1145.0
+offset_bottom = 201.0
+theme_override_colors/default_color = Color(0.44, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_iq5ff")
+theme_override_font_sizes/normal_font_size = 82
+text = "Level #"
+
+[node name="Timer" type="RichTextLabel" parent="." unique_id=424536154]
+offset_left = 864.0
+offset_top = 170.0
+offset_right = 995.0
+offset_bottom = 335.0
+theme_override_colors/default_color = Color(0.44, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_iq5ff")
+theme_override_font_sizes/normal_font_size = 82
+text = "0:0"
+
+[node name="Message" type="RichTextLabel" parent="." unique_id=1495446557]
+offset_left = 755.0
+offset_top = 366.0
+offset_right = 1161.0
+offset_bottom = 624.0
+theme_override_colors/default_color = Color(0.44, 0, 0, 1)
+theme_override_fonts/normal_font = ExtResource("4_iq5ff")
+theme_override_font_sizes/normal_font_size = 30
+text = "Make the day perfect
+and grant a second
+chance to the people"

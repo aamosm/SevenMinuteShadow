@@ -245,5 +245,4 @@ func _update_hearts() -> void:
 			lives_container.hide()
 
 func _end_minigame() -> void:
-	Global.minigames_done += 1
 	get_tree().change_scene_to_file("res://Screen/level_scene.tscn")

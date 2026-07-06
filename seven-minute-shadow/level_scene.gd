@@ -2,8 +2,8 @@ extends Node2D
 
 @export var level_messages: Array[String] = [
 	"Press the prompted key to shoot Mail into the Postbox",
-	"level 2",
-	"",
+	"Demo Minigame 2",
+	"Thanks for Playing, Adding more soon",
 	"4",
 	"",
 	"level 6",

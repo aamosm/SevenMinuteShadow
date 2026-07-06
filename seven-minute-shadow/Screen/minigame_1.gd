@@ -1,16 +1,17 @@
 extends Node2D
 
+
 @export var total_shots: int = 20
 @export var target_width: float = 0.14        # size of the green zone
-@export var min_speed: float = 40.0            
+@export var min_speed: float = 40.0           # slower sweep
 @export var max_speed: float = 100.0
 @export var speed_change_interval_min: float = 1.5
 @export var speed_change_interval_max: float = 3.0
 @export var throw_time: float = 0.35
 @export var shake_strength: float = 6.0
-
-@export var postbox_shift_distance: float = 600.0
-@export var postbox_shift_time: float = 0.6  
+@export var postbox_shift_count: int = 5    
+@export var postbox_shift_distance: float = 400.0
+@export var postbox_shift_time: float = 0.2
 
 @onready var envelope: TextureRect = $Envelope
 @onready var postbox: TextureRect = $Postbox
@@ -23,7 +24,7 @@ extends Node2D
 @onready var icon_2: TextureRect = $Lives/Icon2
 @onready var icon_3: TextureRect = $Lives/Icon3
 @onready var icon_4: TextureRect = $Lives/Icon4
-@onready var cross_icon: TextureRect = get_node_or_null("CrossIcon") 
+@onready var cross_icon: TextureRect = get_node_or_null("CrossIcon")
 
 var key_pool := [
 	{"key": KEY_A, "label": "A"},
@@ -41,6 +42,7 @@ var key_pool := [
 
 var envelope_start_pos: Vector2
 var postbox_original_pos: Vector2
+var postbox_shift_shots: Array = []
 var shots_remaining: int
 var power_value: float = 0.0
 var sweep_direction: int = 1
@@ -58,6 +60,7 @@ func _ready() -> void:
 	shots_remaining = total_shots
 	if cross_icon:
 		cross_icon.visible = false
+	_pick_postbox_shift_shots()
 	_pick_new_speed()
 	_start_speed_shift_loop()
 	_pick_new_key()
@@ -70,6 +73,7 @@ func _process(delta: float) -> void:
 	envelope.position.y = envelope_start_pos.y + sin(float_time * 2.5) * 6.0
 
 	_update_hearts()
+
 	if not can_shoot:
 		return
 
@@ -86,6 +90,7 @@ func _process(delta: float) -> void:
 			direction_flip_count += 1
 	power_bar.value = power_value
 
+
 	if direction_flip_count >= 2:
 		_attempt_shot(true)
 
@@ -96,7 +101,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.keycode == current_key:
 			_attempt_shot(false)
 		else:
-			_attempt_shot(true)  
+			_attempt_shot(true) 
 
 func _pick_new_speed() -> void:
 	current_speed = randf_range(min_speed, max_speed)
@@ -131,6 +136,13 @@ func _position_target_zone() -> void:
 func _is_in_zone() -> bool:
 	var normalized_power: float = power_value / 100.0
 	return abs(normalized_power - target_center) <= (target_width / 2.0)
+
+func _pick_postbox_shift_shots() -> void:
+	var pool: Array = []
+	for i in range(1, total_shots + 1):
+		pool.append(i)
+	pool.shuffle()
+	postbox_shift_shots = pool.slice(0, postbox_shift_count)
 
 func _attempt_shot(force_fail: bool) -> void:
 	can_shoot = false
@@ -171,15 +183,14 @@ func _shake_screen() -> void:
 	await shake_tween.finished
 
 func _shift_postbox() -> void:
-	# Slides the current postbox out to the RIGHT
-	var tween_out := create_tween()
-	tween_out.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween_out.tween_property(postbox, "position:x", postbox_original_pos.x + postbox_shift_distance, postbox_shift_time)
-	await tween_out.finished
-	postbox.position.x = postbox_original_pos.x - postbox_shift_distance
 	
+	var tween_out := create_tween()
+	tween_out.tween_property(postbox, "position:x", postbox_original_pos.x - postbox_shift_distance, postbox_shift_time)
+	await tween_out.finished
+
+	postbox.position.x = postbox_original_pos.x + postbox_shift_distance
+
 	var tween_in := create_tween()
-	tween_in.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(postbox, "position:x", postbox_original_pos.x, postbox_shift_time)
 	await tween_in.finished
 
@@ -196,8 +207,7 @@ func _on_shot_finished() -> void:
 		_end_minigame()
 		return
 
-	# Trigger the swap every 2 shots
-	if completed_shot_number % 2 == 0:
+	if completed_shot_number in postbox_shift_shots:
 		await _shift_postbox()
 
 	_reset_shot()
@@ -210,7 +220,7 @@ func _reset_shot() -> void:
 	power_bar.value = 0
 	_pick_new_key()
 	_randomize_target_zone()
-	can_shoot = true # Resumes the game and inputs
+	can_shoot = true
 
 func _update_shot_label() -> void:
 	if shots_remaining <= 0:

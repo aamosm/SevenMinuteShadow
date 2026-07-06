@@ -99,7 +99,7 @@ func _handle_timeout() -> void:
 	_flash_cross()
 	
 	if Global.lives <= 0:
-		_end_game(false)
+		get_tree().change_scene_to_file("res://Screen/game_over.tscn")
 	else:
 		# Reset timer and move the box to give them another chance
 		time_remaining = current_time_limit
@@ -142,11 +142,12 @@ func _end_game(won: bool) -> void:
 	if won:
 		if instruction_label:
 			instruction_label.text = "All Delivered!"
+			await get_tree().create_timer(1.5).timeout
+			get_tree().change_scene_to_file("res://Screen/uwintemp.tscn")
 	else:
 		if instruction_label:
 			instruction_label.text = "Game Over!"
 			if power_bar:
 				power_bar.value = 0
-			
-	await get_tree().create_timer(1.5).timeout
-	get_tree().change_scene_to_file("res://Screen/level_scene.tscn")
+		await get_tree().create_timer(1.5).timeout
+		get_tree().change_scene_to_file("res://Screen/game_over.tscn")

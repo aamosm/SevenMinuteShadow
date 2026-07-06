@@ -1,3 +1,10 @@
 [gd_scene format=3 uid="uid://b7e6mvqfbn4b"]
 
-[node name="GameOver" type="Node2D" unique_id=581376831]
+[ext_resource type="Script" uid="uid://qejows12sfkf" path="res://Screen/game_over.gd" id="1_1nsqm"]
+
+[node name="Control" type="Control" unique_id=837100174]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1161.0
+offset_bottom = 657.0
+script = ExtResource("1_1nsqm")

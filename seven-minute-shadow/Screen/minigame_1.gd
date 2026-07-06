@@ -200,7 +200,7 @@ func _on_shot_finished() -> void:
 	_update_shot_label()
 
 	if Global.lives <= 0:
-		_end_minigame()
+		get_tree().change_scene_to_file("res://Screen/game_over.tscn")
 		return
 
 	if shots_remaining <= 0:

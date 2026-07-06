@@ -1,14 +1,16 @@
 extends Node2D
 
-
-@export var total_shots: int = 11
-@export var target_width: float = 0.10        # how wide the green zone is — smaller = harder
-@export var min_speed: float = 60.0
-@export var max_speed: float = 160.0
-@export var speed_change_interval_min: float = 1.0
-@export var speed_change_interval_max: float = 2.0
+@export var total_shots: int = 20
+@export var target_width: float = 0.14        # size of the green zone
+@export var min_speed: float = 40.0            
+@export var max_speed: float = 100.0
+@export var speed_change_interval_min: float = 1.5
+@export var speed_change_interval_max: float = 3.0
 @export var throw_time: float = 0.35
 @export var shake_strength: float = 6.0
+
+@export var postbox_shift_distance: float = 600.0
+@export var postbox_shift_time: float = 0.6  
 
 @onready var envelope: TextureRect = $Envelope
 @onready var postbox: TextureRect = $Postbox
@@ -21,9 +23,8 @@ extends Node2D
 @onready var icon_2: TextureRect = $Lives/Icon2
 @onready var icon_3: TextureRect = $Lives/Icon3
 @onready var icon_4: TextureRect = $Lives/Icon4
-@onready var cross_icon: TextureRect = $CrossIcon   # add this node yourself, hidden by default
+@onready var cross_icon: TextureRect = get_node_or_null("CrossIcon") 
 
-## The only keys that can ever be picked for a round. Edit this list freely.
 var key_pool := [
 	{"key": KEY_A, "label": "A"},
 	{"key": KEY_S, "label": "S"},
@@ -39,9 +40,11 @@ var key_pool := [
 ]
 
 var envelope_start_pos: Vector2
+var postbox_original_pos: Vector2
 var shots_remaining: int
 var power_value: float = 0.0
 var sweep_direction: int = 1
+var direction_flip_count: int = 0
 var current_speed: float
 var target_center: float = 0.5
 var current_key: Key
@@ -51,8 +54,10 @@ var float_time: float = 0.0
 
 func _ready() -> void:
 	envelope_start_pos = envelope.position
+	postbox_original_pos = postbox.position
 	shots_remaining = total_shots
-	cross_icon.visible = false
+	if cross_icon:
+		cross_icon.visible = false
 	_pick_new_speed()
 	_start_speed_shift_loop()
 	_pick_new_key()
@@ -65,26 +70,33 @@ func _process(delta: float) -> void:
 	envelope.position.y = envelope_start_pos.y + sin(float_time * 2.5) * 6.0
 
 	_update_hearts()
-
 	if not can_shoot:
 		return
 
-	# the bar sweeps up, then down, forever, until a valid key press resolves the shot
 	power_value += sweep_direction * current_speed * delta
 	if power_value >= 100.0:
 		power_value = 100.0
-		sweep_direction = -1
+		if sweep_direction == 1:
+			sweep_direction = -1
+			direction_flip_count += 1
 	elif power_value <= 0.0:
 		power_value = 0.0
-		sweep_direction = 1
+		if sweep_direction == -1:
+			sweep_direction = 1
+			direction_flip_count += 1
 	power_bar.value = power_value
+
+	if direction_flip_count >= 2:
+		_attempt_shot(true)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not can_shoot:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == current_key:
-			_resolve_shot()
+			_attempt_shot(false)
+		else:
+			_attempt_shot(true)  
 
 func _pick_new_speed() -> void:
 	current_speed = randf_range(min_speed, max_speed)
@@ -116,17 +128,17 @@ func _position_target_zone() -> void:
 	target_zone.size.x = zone_px_width
 	target_zone.size.y = power_bar.size.y
 
-func _resolve_shot() -> void:
-	can_shoot = false
+func _is_in_zone() -> bool:
 	var normalized_power: float = power_value / 100.0
-	var distance_from_center: float = abs(normalized_power - target_center)
-	var is_success: bool = distance_from_center <= (target_width / 2.0)
+	return abs(normalized_power - target_center) <= (target_width / 2.0)
 
-	if is_success:
+func _attempt_shot(force_fail: bool) -> void:
+	can_shoot = false
+	var success: bool = (not force_fail) and _is_in_zone()
+	if success:
 		await _play_success()
 	else:
 		await _play_fail()
-
 	_on_shot_finished()
 
 func _play_success() -> void:
@@ -139,10 +151,12 @@ func _play_fail() -> void:
 	instruction_label.text = "Missed..."
 	Global.lives -= 1
 	_update_hearts()
-	cross_icon.visible = true
+	if cross_icon:
+		cross_icon.visible = true
 	await _shake_screen()
 	await get_tree().create_timer(0.3).timeout
-	cross_icon.visible = false
+	if cross_icon:
+		cross_icon.visible = false
 
 func _shake_screen() -> void:
 	var original_pos: Vector2 = position
@@ -156,8 +170,22 @@ func _shake_screen() -> void:
 	shake_tween.tween_property(self, "position", original_pos, 0.03)
 	await shake_tween.finished
 
+func _shift_postbox() -> void:
+	# Slides the current postbox out to the RIGHT
+	var tween_out := create_tween()
+	tween_out.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween_out.tween_property(postbox, "position:x", postbox_original_pos.x + postbox_shift_distance, postbox_shift_time)
+	await tween_out.finished
+	postbox.position.x = postbox_original_pos.x - postbox_shift_distance
+	
+	var tween_in := create_tween()
+	tween_in.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween_in.tween_property(postbox, "position:x", postbox_original_pos.x, postbox_shift_time)
+	await tween_in.finished
+
 func _on_shot_finished() -> void:
 	shots_remaining -= 1
+	var completed_shot_number: int = total_shots - shots_remaining
 	_update_shot_label()
 
 	if Global.lives <= 0:
@@ -168,16 +196,21 @@ func _on_shot_finished() -> void:
 		_end_minigame()
 		return
 
+	# Trigger the swap every 2 shots
+	if completed_shot_number % 2 == 0:
+		await _shift_postbox()
+
 	_reset_shot()
 
 func _reset_shot() -> void:
 	envelope.position = envelope_start_pos
 	power_value = 0.0
 	sweep_direction = 1
+	direction_flip_count = 0
 	power_bar.value = 0
 	_pick_new_key()
 	_randomize_target_zone()
-	can_shoot = true
+	can_shoot = true # Resumes the game and inputs
 
 func _update_shot_label() -> void:
 	if shots_remaining <= 0:
@@ -212,4 +245,5 @@ func _update_hearts() -> void:
 			lives_container.hide()
 
 func _end_minigame() -> void:
+	Global.minigames_done += 1
 	get_tree().change_scene_to_file("res://Screen/level_scene.tscn")

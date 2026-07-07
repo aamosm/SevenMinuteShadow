@@ -2,7 +2,7 @@
 
 A narrative-driven, WarioWare-style microgame collection where you play through brief snippets of everyday life during the final seven minutes before an impending disaster. Or whatever the plot is (idk check it out yourself).
 
-**[▶ Play the Demo Here](#)** *(Demo link coming soon!)*
+**[▶ Play the Demo Here](#)** (https://aamosm.itch.io/seven-minute-shadow)
 
 > *"Radar has detected a lone, high-altitude aircraft approaching from the east. Command assesses it as a routine weather..."*
 

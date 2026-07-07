@@ -72,7 +72,8 @@ func _on_animation_finished(anim_name: StringName) -> void:
 	tween.set_trans(Tween.TRANS_CUBIC)
 	tween.set_ease(Tween.EASE_OUT)
 
-	tween.tween_property(camera, "fov", original_fov - 18.0, 0.18)
+	var target_fov = max(original_fov - 18.0, 1.0)
+	tween.tween_property(camera, "fov", target_fov, 0.18)
 	tween.tween_property(camera, "rotation_degrees", Vector3(
 		original_rotation.x,
 		original_rotation.y,

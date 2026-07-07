@@ -74,6 +74,5 @@ func walk(direction: String):
 	play_anim(1)
 
 func stop():
-	scripted = false
 	velocity = Vector2.ZERO
 	play_anim(0)

@@ -12,4 +12,6 @@ func _process(delta: float) -> void:
 
 
 func _on_pressed() -> void:
+	Global.minigames_done = 0
+	Global.lives = 4
 	get_tree().change_scene_to_file("res://Screen/cutscene.tscn")

@@ -1,29 +1,63 @@
+<div align="center">
+
 # Seven Minute Shadow
 
-A narrative-driven, WarioWare-style microgame collection where you play through brief snippets of everyday life during the final seven minutes before an impending disaster. Or whatever the plot is (idk check it out yourself) /s.
+A fast-paced collection of procedural microgames inspired by WarioWare.
 
-**[▶ Play the Demo Here](https://aamosm.itch.io/seven-minute-shadow)**
+**Play:** https://aamosm.itch.io/seven-minute-shadow  
+**devlog:** https://stardance.hackclub.com/projects/29189
 
-> *"Radar has detected a lone, high-altitude aircraft approaching from the east. Command assesses it as a routine weather..."*
+</div>
 
-## 🎮 About the Game
+---
 
-This project is my first foray into Godot, heavily inspired by the chaotic, fast-paced loop of classic GBA *WarioWare* titles. Instead of a random assortment of "slop" minigames, the goal here is to ground the rapid-fire gameplay with a cohesive narrative that actually builds toward a definitive ending. 
+## About
 
-**Current Demo Build:** Features the core gameplay loop, a functional lives/heart system, and the first **2 minigames** (starting with a mail delivery task). 
-**Full Release Goal:** A total of 7 minigames, fully woven together with story and narration. It’s a small, focused project, but the narrative is meant to shine.
+Seven Minute Shadow is a collection of short microgames where every few seconds you're thrown into a completely different challenge.
 
-## Features
+The goal is simple: react quickly, survive as long as possible, and adapt before the next game begins.
 
-* **Rapid-Fire Minigames:** Fast-paced, intuitive microgames inspired by the WarioWare series.
-* **Narrative Focus:** Every task ties into a continuous, looming story that builds toward a definitive ending.
+The project was built for Hack Club's **Stardance** challenge.
 
+---
 
-## How to run it locally
+- Multiple unique microgames
+- Fast-paced gameplay
+- Built with Godot
 
-If you want to view the source code or run the project in the editor:
+---
 
-1. Install **Godot Engine** (v4.x).
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/aamosm/seven-minute-shadow.git
+## Controls
+
+| Key | Action |
+|------|--------|
+| **WASD / Arrow Keys** | Move |
+| **Space / Left Click** | Interact (depending on the microgame) |
+
+---
+
+## Running Locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/aamosm/SevenMinuteShadow.git
+```
+
+Open the project using **Godot 4** and press **F5** to run.
+
+---
+
+## Roadmap
+
+- More microgames
+- Better transitions
+- More polish and effects
+- Improved balancing
+- Sound effects and music
+
+---
+
+## License
+
+MIT

@@ -56,8 +56,4 @@ Open the project using **Godot 4** and press **F5** to run.
 - Improved balancing
 - Sound effects and music
 
----
 
-## License
-
-MIT

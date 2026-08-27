@@ -4,6 +4,8 @@
 [ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="2_d31s6"]
 [ext_resource type="Script" uid="uid://dj5nm75hq26ep" path="res://Screen/start_game.gd" id="3_7teo8"]
 [ext_resource type="Script" uid="uid://cwyfjr0fjhxoh" path="res://Screen/exit.gd" id="3_d31s6"]
+[ext_resource type="AudioStream" uid="uid://dc8o0j46hxw5l" path="res://Assets/djartmusic-the-return-of-the-8-bit-era-301292_TITLESCREEN.mp3" id="5_3bo18"]
+[ext_resource type="Script" uid="uid://dggyssr7ump65" path="res://Screen/title_music.gd" id="6_yt74d"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uqg10"]
 bg_color = Color(0.08, 0, 0.038666688, 0.043137256)
@@ -59,8 +61,13 @@ offset_top = 307.0
 offset_right = 992.0
 offset_bottom = 349.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_77okg")
-text = "Leave"
+text = "Nah, I'm Done"
 script = ExtResource("3_d31s6")
+
+[node name="TitleMusic" type="AudioStreamPlayer" parent="." unique_id=180743786]
+stream = ExtResource("5_3bo18")
+autoplay = true
+script = ExtResource("6_yt74d")
 
 [connection signal="pressed" from="BG/StartGame" to="BG/StartGame" method="_on_pressed"]
 [connection signal="pressed" from="BG/Exit" to="BG/Exit" method="_on_pressed"]

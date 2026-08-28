@@ -1,3 +1,14 @@
 [gd_scene format=3 uid="uid://b6l15ph6ru6pl"]
 
-[node name="end_scene" type="Node2D" unique_id=1084212546]
+[ext_resource type="Script" uid="uid://b1a4hdy30kv8h" path="res://Screen/end_scene.gd" id="1_end"]
+[ext_resource type="PackedScene" uid="uid://b3hme317mjpcd" path="res://player.tscn" id="2_player"]
+
+[node name="EndScene" type="Node2D" unique_id=520842917]
+script = ExtResource("1_end")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1338006928]
+position = Vector2(288, 164)
+zoom = Vector2(2, 2)
+
+[node name="Player" parent="." unique_id=582907431 instance=ExtResource("2_player")]
+position = Vector2(288, 255)

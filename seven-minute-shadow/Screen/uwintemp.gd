@@ -65,11 +65,8 @@ var glitch_saved_volume_db: float = 0.0
 
 
 func _ready() -> void:
-	recovered_letters = clampi(
-		Global.minigames_done,
-		0,
-		4
-	)
+	Global.minigames_done = 4
+	recovered_letters = 4
 
 	set_anchors_and_offsets_preset(
 		Control.PRESET_FULL_RECT
@@ -185,6 +182,16 @@ func _add_death_distortion() -> void:
 
 
 	var low_pass := AudioEffectLowPassFilter.new()
+	var limiter := AudioEffectLimiter.new()
+
+	limiter.threshold_db = -3.0
+	limiter.ceiling_db = -1.0
+	limiter.soft_clip_db = 2.0
+
+	AudioServer.add_bus_effect(
+		bus_index,
+		limiter
+	)
 
 	low_pass.cutoff_hz = 2750.0
 
@@ -197,50 +204,51 @@ func _add_death_distortion() -> void:
 
 	death_effects_added = true
 
-
 func _process_music_glitch(
 	delta: float
 ) -> void:
 	if not glitch_enabled:
 		return
 
-
 	var bus_index: int = AudioServer.get_bus_index(
 		GAMEPLAY_BUS
 	)
 
-
 	if bus_index < 0:
 		return
-
 
 	if glitch_active:
 		glitch_hold -= delta
 
-
 		if glitch_hold <= 0.0:
-			AudioServer.set_bus_volume_db(
-				bus_index,
-				glitch_saved_volume_db
-			)
-
 			glitch_active = false
+
+			var tween := create_tween()
+
+			tween.tween_method(
+				func(value: float):
+					AudioServer.set_bus_volume_db(
+						bus_index,
+						value
+					),
+				AudioServer.get_bus_volume_db(
+					bus_index
+				),
+				glitch_saved_volume_db,
+				0.025
+			)
 
 			glitch_wait = randf_range(
 				0.28,
 				1.05
 			)
 
-
 		return
-
 
 	glitch_wait -= delta
 
-
 	if glitch_wait > 0.0:
 		return
-
 
 	glitch_saved_volume_db = (
 		AudioServer.get_bus_volume_db(
@@ -248,28 +256,35 @@ func _process_music_glitch(
 		)
 	)
 
-
 	var drop_amount: float = randf_range(
 		15.0,
-		35.0
+		30.0
 	)
 
-
-	AudioServer.set_bus_volume_db(
-		bus_index,
+	var target_db: float = (
 		glitch_saved_volume_db
 		- drop_amount
 	)
 
+	var tween := create_tween()
+
+	tween.tween_method(
+		func(value: float):
+			AudioServer.set_bus_volume_db(
+				bus_index,
+				value
+			),
+		glitch_saved_volume_db,
+		target_db,
+		0.012
+	)
 
 	glitch_active = true
 
-
 	glitch_hold = randf_range(
-		0.025,
-		0.095
+		0.035,
+		0.09
 	)
-
 
 func _restore_glitch_volume() -> void:
 	if not glitch_active:

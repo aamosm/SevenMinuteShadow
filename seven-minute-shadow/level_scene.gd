@@ -1,7 +1,7 @@
 extends Node2D
 
 @export var fade_duration: float = 0.65
-@export var screen_duration: float = 7
+@export var screen_duration: float = 8
 
 @onready var background: TextureRect = $TextureRect
 
@@ -17,15 +17,19 @@ extends Node2D
 
 var route_label: RichTextLabel
 var mail_label: RichTextLabel
+var instruction_label: RichTextLabel
+var countdown_label: RichTextLabel
 var separator: ColorRect
+
+var screen_time_left: float = 0.0
+var countdown_running: bool = false
 
 
 const HOUSE_RANGES: Array[String] = [
 	"HOUSES 01 - 02",
 	"HOUSES 03 - 04",
 	"HOUSES 05 - 06",
-	"HOUSES 07 - 08",
-	"HOUSES 09 - 10"
+	"HOUSES 07 - 08"
 ]
 
 
@@ -33,8 +37,7 @@ const MAIL_REMAINING: Array[int] = [
 	20,
 	16,
 	12,
-	8,
-	4
+	8
 ]
 
 
@@ -42,30 +45,34 @@ const ROUTE_TIMES: Array[String] = [
 	"17:53",
 	"17:55",
 	"17:56",
-	"17:58",
-	"17:59"
+	"17:58"
 ]
 
 
 const RECORD_NAMES: Array[String] = [
 	"KYOSHIMA CENTRAL POST",
-	"MUNICIPAL EMERGENCY LOG",
-	"CIVIL DEFENCE RECORD",
-	"KYOSHIMA CENTRAL POST",
-	"ROUTE SIX LEDGER"
+	"KIYOSHIMA CIVIL DEFENCE",
+	"KIYOSHIMA CIVIL DEFENCE",
+	"EMERGENCY SERVICE BULLETIN"
 ]
 
 
 const RECORD_TEXT: Array[String] = [
-	"Route Six departed at 17:53.\nFinal collection scheduled: 18:00.",
+	"Kiyoshima's evening postal round began as usual.\nCivil Defence reports no active alert.\nFinal collection remains scheduled for 18:00.",
 
-	"17:55 - emergency frequency activated.\nTransmission ended after eleven seconds.",
+	"At 17:54, Civil Defence received an unverified air-raid warning for Kiyoshima.\nThe warning is still being checked.\nUntil confirmation, public services have been ordered to continue.",
 
-	"17:56 - civil warning authenticated.\nEstimated window remaining: four minutes.",
+	"At 17:56, the warning is confirmed.\nA bombing raid is expected before 18:00.\nSirens have begun in the central wards. Route Six is still outside.",
 
-	"17:58 - Route Six remained active.\nFinal collection unchanged: 18:00.",
+	"17:58. Communications are failing and evacuation has begun too late in several outer wards.\nImpact is expected before 18:00.\nRoute Six still has eight pieces of mail."
+]
 
-	"17:59 - four items remained.\nNo later entries"
+
+const INSTRUCTIONS: Array[String] = [
+	"KEYBOARD - Press the shown key while the bar is inside green.",
+	"MOUSE - Move the envelope fully onto the postbox, then click.",
+	"MOUSE - Click the address that matches the envelope.",
+	"MOUSE - Inspect, then drag the requested envelope into the slot."
 ]
 
 
@@ -76,35 +83,51 @@ func _ready() -> void:
 		)
 		return
 
-	if Global.minigames_done >= 5:
+	if Global.minigames_done >= 4:
 		get_tree().change_scene_to_file(
-			"res://Screen/game_over.tscn"
+			"res://Screen/win_scene.tscn"
 		)
 		return
 
 	var stage: int = clampi(
 		Global.minigames_done,
 		0,
-		4
+		3
 	)
 
 	_create_extra_ui()
 	_setup_layout()
-	_update_hearts()
 
+	_update_hearts()
 	_apply_stage_text(stage)
 	_apply_stage_visuals(stage)
 
-	MusicManager.start_gameplay(stage)
+	var music_stage: int = stage
+
+	if stage == 3:
+		music_stage = 4
+
+	MusicManager.start_gameplay(
+		music_stage
+	)
+
 	MusicManager.enter_interstitial()
 
 	modulate.a = 0.0
 
 	await _fade_to(1.0)
 
+	screen_time_left = screen_duration
+	countdown_running = true
+	_update_countdown_text()
+
 	await get_tree().create_timer(
 		screen_duration
 	).timeout
+
+	countdown_running = false
+	screen_time_left = 0.0
+	_update_countdown_text()
 
 	await _fade_to(0.0)
 
@@ -119,6 +142,18 @@ func _ready() -> void:
 	get_tree().change_scene_to_file(
 		minigame_path
 	)
+
+
+func _process(delta: float) -> void:
+	if not countdown_running:
+		return
+
+	screen_time_left = maxf(
+		screen_time_left - delta,
+		0.0
+	)
+
+	_update_countdown_text()
 
 
 func _create_extra_ui() -> void:
@@ -159,6 +194,38 @@ func _create_extra_ui() -> void:
 	add_child(mail_label)
 
 
+	instruction_label = RichTextLabel.new()
+
+	instruction_label.name = "Instruction"
+	instruction_label.bbcode_enabled = true
+	instruction_label.scroll_active = false
+	instruction_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	instruction_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+	instruction_label.add_theme_font_override(
+		"normal_font",
+		normal_font
+	)
+
+	add_child(instruction_label)
+
+
+	countdown_label = RichTextLabel.new()
+
+	countdown_label.name = "Countdown"
+	countdown_label.bbcode_enabled = true
+	countdown_label.scroll_active = false
+	countdown_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	countdown_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+
+	countdown_label.add_theme_font_override(
+		"normal_font",
+		normal_font
+	)
+
+	add_child(countdown_label)
+
+
 	separator = ColorRect.new()
 
 	separator.name = "LoreSeparator"
@@ -174,92 +241,117 @@ func _setup_layout() -> void:
 
 	var column_width: float = minf(
 		viewport_size.x * 0.36,
-		viewport_size.x - column_x - 34.0
+		viewport_size.x - column_x - 32.0
 	)
 
 
 	route_label.position = Vector2(
 		column_x,
-		96.0
+		58.0
 	)
 
 	route_label.size = Vector2(
 		column_width,
-		32.0
+		28.0
 	)
 
 
 	level_label.position = Vector2(
 		column_x,
-		143.0
+		91.0
 	)
 
 	level_label.size = Vector2(
 		column_width,
-		64.0
+		58.0
 	)
 
 
 	timer_label.position = Vector2(
 		column_x,
-		209.0
+		151.0
 	)
 
 	timer_label.size = Vector2(
 		column_width,
-		62.0
+		51.0
 	)
 
 
 	mail_label.position = Vector2(
 		column_x,
-		291.0
+		217.0
 	)
 
 	mail_label.size = Vector2(
 		column_width,
-		76.0
+		67.0
 	)
 
 
 	separator.position = Vector2(
 		column_x,
-		381.0
+		301.0
 	)
 
 	separator.size = Vector2(
-		column_width * 0.90,
+		column_width * 0.92,
 		1.0
 	)
 
 
 	message_label.position = Vector2(
 		column_x,
-		403.0
+		319.0
 	)
 
 	message_label.size = Vector2(
 		column_width,
-		142.0
+		160.0
+	)
+
+
+	instruction_label.position = Vector2(
+		column_x,
+		493.0
+	)
+
+	instruction_label.size = Vector2(
+		column_width,
+		34.0
+	)
+
+
+	countdown_label.position = Vector2(
+		column_x,
+		535.0
+	)
+
+	countdown_label.size = Vector2(
+		column_width,
+		27.0
 	)
 
 
 	lives_container.position = Vector2(
 		column_x,
-		561.0
+		579.0
 	)
 
 	lives_container.size = Vector2(
 		180.0,
-		34.0
+		32.0
 	)
 
 	lives_container.scale = Vector2.ONE
 	lives_container.pivot_offset = Vector2.ZERO
 
+	lives_container.offset_transform_enabled = false
+	lives_container.offset_transform_scale = Vector2.ONE
+
 	lives_container.add_theme_constant_override(
 		"separation",
-		8
+		7
 	)
 
 
@@ -287,34 +379,46 @@ func _setup_layout() -> void:
 
 	route_label.add_theme_font_size_override(
 		"normal_font_size",
-		16
+		15
 	)
 
 	level_label.add_theme_font_size_override(
 		"normal_font_size",
-		35
+		33
 	)
 
 	timer_label.add_theme_font_size_override(
 		"normal_font_size",
-		35
+		33
 	)
 
 	mail_label.add_theme_font_size_override(
 		"normal_font_size",
-		24
+		22
 	)
 
 	message_label.add_theme_font_size_override(
 		"normal_font_size",
-		15
+		14
+	)
+
+	instruction_label.add_theme_font_size_override(
+		"normal_font_size",
+		12
+	)
+
+	countdown_label.add_theme_font_size_override(
+		"normal_font_size",
+		12
 	)
 
 
-func _setup_heart(heart: TextureRect) -> void:
+func _setup_heart(
+	heart: TextureRect
+) -> void:
 	heart.custom_minimum_size = Vector2(
-		32.0,
-		32.0
+		31.0,
+		31.0
 	)
 
 	heart.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -324,36 +428,64 @@ func _setup_heart(heart: TextureRect) -> void:
 	)
 
 
-func _apply_stage_text(stage: int) -> void:
+func _apply_stage_text(
+	stage: int
+) -> void:
 	route_label.text = "ROUTE SIX"
 
-	level_label.text = HOUSE_RANGES[stage]
+	level_label.text = (
+		HOUSE_RANGES[stage]
+	)
 
-	timer_label.text = ROUTE_TIMES[stage]
+	timer_label.text = (
+		ROUTE_TIMES[stage]
+	)
 
 
 	mail_label.text = (
-		"[font_size=25]"
+		"[font_size=24]"
 		+ str(MAIL_REMAINING[stage])
 		+ " MAIL ITEMS"
 		+ "[/font_size]\n"
-		+ "[font_size=13]"
+		+ "[font_size=12]"
 		+ "TO DELIVER"
 		+ "[/font_size]"
 	)
 
 
 	message_label.text = (
-		"[font_size=16]"
+		"[font_size=15]"
 		+ RECORD_NAMES[stage]
 		+ "[/font_size]\n"
-		+ "[font_size=14]"
+		+ "[font_size=13]"
 		+ RECORD_TEXT[stage]
 		+ "[/font_size]"
 	)
 
 
-func _apply_stage_visuals(stage: int) -> void:
+	instruction_label.text = (
+		"[font_size=12]"
+		+ INSTRUCTIONS[stage]
+		+ "[/font_size]"
+	)
+
+
+func _update_countdown_text() -> void:
+	if countdown_label == null:
+		return
+
+	countdown_label.text = (
+		"NEXT IN "
+		+ String.num(
+			screen_time_left,
+			1
+		)
+	)
+
+
+func _apply_stage_visuals(
+	stage: int
+) -> void:
 	var background_tint: Color
 	var text_color: Color
 
@@ -377,15 +509,15 @@ func _apply_stage_visuals(stage: int) -> void:
 
 		1:
 			background_tint = Color(
-				0.95,
-				0.87,
-				0.78,
+				0.91,
+				0.80,
+				0.73,
 				1.0
 			)
 
 			text_color = Color(
-				0.42,
-				0.02,
+				0.40,
+				0.018,
 				0.015,
 				1.0
 			)
@@ -393,15 +525,15 @@ func _apply_stage_visuals(stage: int) -> void:
 
 		2:
 			background_tint = Color(
-				0.82,
-				0.68,
-				0.64,
+				0.72,
+				0.58,
+				0.60,
 				1.0
 			)
 
 			text_color = Color(
-				0.34,
-				0.025,
+				0.30,
+				0.02,
 				0.025,
 				1.0
 			)
@@ -409,32 +541,16 @@ func _apply_stage_visuals(stage: int) -> void:
 
 		3:
 			background_tint = Color(
-				0.65,
-				0.50,
-				0.56,
-				1.0
-			)
-
-			text_color = Color(
-				0.93,
-				0.82,
-				0.74,
-				1.0
-			)
-
-
-		4:
-			background_tint = Color(
 				0.43,
-				0.36,
-				0.48,
+				0.35,
+				0.47,
 				1.0
 			)
 
 			text_color = Color(
 				0.96,
-				0.88,
-				0.80,
+				0.86,
+				0.78,
 				1.0
 			)
 
@@ -472,9 +588,22 @@ func _apply_stage_visuals(stage: int) -> void:
 		text_color
 	)
 
+	instruction_label.add_theme_color_override(
+		"default_color",
+		text_color
+	)
+
+	var countdown_color: Color = text_color
+	countdown_color.a = 0.65
+
+	countdown_label.add_theme_color_override(
+		"default_color",
+		countdown_color
+	)
+
 
 	var separator_color: Color = text_color
-	separator_color.a = 0.22
+	separator_color.a = 0.20
 
 	separator.color = separator_color
 
@@ -485,10 +614,14 @@ func _update_hearts() -> void:
 	icon_3.visible = Global.lives >= 3
 	icon_4.visible = Global.lives >= 4
 
-	lives_container.visible = Global.lives > 0
+	lives_container.visible = (
+		Global.lives > 0
+	)
 
 
-func _fade_to(target_alpha: float) -> void:
+func _fade_to(
+	target_alpha: float
+) -> void:
 	var tween: Tween = create_tween()
 
 	tween.set_trans(

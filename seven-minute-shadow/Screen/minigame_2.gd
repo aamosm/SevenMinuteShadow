@@ -3,8 +3,8 @@ extends Node2D
 @export var required_deliveries: int = 16
 
 @export var initial_time_limit: float = 2.0
-@export var final_time_limit: float = 0.55
-@export var time_curve_power: float = 1.15
+@export var final_time_limit: float = 0.38
+@export var time_curve_power: float = 1.45
 
 @export var postbox_move_time: float = 0.16
 @export var screen_padding: float = 24.0
@@ -180,7 +180,23 @@ func _update_time_limit() -> void:
 		curved_progress
 	)
 
+	if progress > 0.72:
+		var end_pressure: float = inverse_lerp(
+			0.72,
+			1.0,
+			progress
+		)
 
+		current_time_limit -= lerpf(
+			0.0,
+			0.08,
+			end_pressure
+		)
+
+	current_time_limit = maxf(
+		current_time_limit,
+		0.38
+	)
 func _move_postbox() -> void:
 	active = false
 

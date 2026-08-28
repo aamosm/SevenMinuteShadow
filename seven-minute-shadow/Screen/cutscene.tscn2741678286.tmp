@@ -9,8 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://bwmnn3wqfqhuj" path="res://Assets/postoffice.png" id="6_ngne1"]
 [ext_resource type="PackedScene" uid="uid://cqjx8x83cw4jg" path="res://mailman.tscn" id="7_m3q4a"]
 [ext_resource type="Texture2D" uid="uid://ie7nmve81pp1" path="res://Assets/envelope_sealed.png" id="8_1h731"]
-[ext_resource type="AudioStream" uid="uid://y0l7s3mxt68p" path="res://Assets/djartmusic-i-love-my-8-bit-game-console-301272.mp3" id="10_6k7dl"]
-[ext_resource type="Script" uid="uid://kw4c0ioivnfx" path="res://Screen/audio_stream_player.gd" id="11_4sl8n"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6k7dl"]
 texture = ExtResource("2_ec3ip")
@@ -452,8 +450,3 @@ libraries/ = SubResource("AnimationLibrary_q0xcs")
 [node name="AnimationPlayer2" type="AnimationPlayer" parent="." unique_id=1616056394]
 root_node = NodePath("../AnimationPlayer")
 libraries/ = SubResource("AnimationLibrary_6k7dl")
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=2117289383]
-stream = ExtResource("10_6k7dl")
-autoplay = true
-script = ExtResource("11_4sl8n")

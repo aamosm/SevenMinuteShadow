@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ncxagsg4blat"]
 
 [ext_resource type="Texture2D" uid="uid://o7wplowvo2af" path="res://Assets/TitleScreen.png" id="1_6dnvh"]
+[ext_resource type="Script" uid="uid://b1bbw7sl1ha2q" path="res://MusicManager.gd" id="1_8uwny"]
 [ext_resource type="FontFile" uid="uid://bad1nvi7lbgf" path="res://Fonts/Gloria_Hallelujah/GloriaHallelujah-Regular.ttf" id="2_d31s6"]
 [ext_resource type="Script" uid="uid://dj5nm75hq26ep" path="res://Screen/start_game.gd" id="3_7teo8"]
 [ext_resource type="Script" uid="uid://cwyfjr0fjhxoh" path="res://Screen/exit.gd" id="3_d31s6"]
@@ -32,6 +33,7 @@ shadow_offset = Vector2(10, 10)
 bg_color = Color(0, 0, 0, 1)
 
 [node name="TitleScreen" type="Node2D" unique_id=696023902]
+script = ExtResource("1_8uwny")
 
 [node name="BG" type="TextureRect" parent="." unique_id=1515057322]
 modulate = Color(0.96862745, 0.99215686, 0.85882354, 1)

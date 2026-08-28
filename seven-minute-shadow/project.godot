@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+MusicManager="*uid://b1bbw7sl1ha2q"
 Global="*uid://duvi7yuw8ii3q"
 DialogueManager="*uid://c3rodes2l3gxb"
 

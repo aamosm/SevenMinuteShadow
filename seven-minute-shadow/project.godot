@@ -15,6 +15,10 @@ run/main_scene="uid://ncxagsg4blat"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[audio]
+
+general/default_playback_type.web=0
+
 [autoload]
 
 MusicManager="*uid://b1bbw7sl1ha2q"
@@ -23,7 +27,8 @@ DialogueManager="*uid://c3rodes2l3gxb"
 
 [display]
 
-window/stretch/mode="viewport"
+window/size/viewport_height=655
+window/stretch/mode="canvas_items"
 
 [editor_plugins]
 

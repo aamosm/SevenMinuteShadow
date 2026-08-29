@@ -1,55 +1,43 @@
 extends Node2D
 
-
-# =========================================================
-# CAMERA / ROOM
-# =========================================================
-
-const ROOM_SIZE := Vector2(
-	576.0,
-	328.0
-)
-
-const CAMERA_CENTER := Vector2(
-	288.0,
-	164.0
-)
-
+const ROOM_SIZE := Vector2(576.0, 328.0)
+const CAMERA_CENTER := Vector2(288.0, 164.0)
 const CAMERA_ZOOM: float = 2.0
 
+const PLAYER_SPAWN := Vector2(288.0, 250.0)
 
-const PLAYER_SPAWN := Vector2(
-	288.0,
-	250.0
+const ARCHIVE_POINT := Vector2(288.0, 136.0)
+const RETRY_ZONE := Rect2(
+	Vector2(
+		20.0,
+		190.0
+	),
+	Vector2(
+		130.0,
+		62.0
+	)
 )
-
-
-# Interaction points are intentionally OUTSIDE the
-# physical wall collisions.
-const ARCHIVE_POINT := Vector2(
-	288.0,
-	136.0
+const LEAVE_ZONE := Rect2(
+	Vector2(
+		426.0,
+		190.0
+	),
+	Vector2(
+		130.0,
+		62.0
+	)
 )
-
-const RETRY_POINT := Vector2(
-	166.0,
-	150.0
-)
-
-const LEAVE_POINT := Vector2(
-	410.0,
-	150.0
-)
-
 
 const INTERACTION_DISTANCE: float = 45.0
 
+const CUTSCENE_PATH := "res://Screen/cutscene.tscn"
 
-# -1 = actual Global.minigames_done
-# 0-4 = force value while testing EndScene directly
+const CUTSCENE_SCRIPT = preload(
+	"res://Screen/cutscene.gd"
+)
+
 @export_range(-1, 4, 1)
 var test_recovered_items: int = -1
-
 
 enum InteractionType {
 	NONE,
@@ -58,7 +46,6 @@ enum InteractionType {
 	LEAVE
 }
 
-
 enum ModalType {
 	NONE,
 	ARCHIVE,
@@ -66,11 +53,6 @@ enum ModalType {
 	LEAVE_CONFIRM,
 	ENDING
 }
-
-
-# =========================================================
-# DOCUMENTS
-# =========================================================
 
 const DOCUMENTS: Array = [
 	{
@@ -93,7 +75,6 @@ const DOCUMENTS: Array = [
 			+ "And don't fold the corners this time.\n\n"
 			+ "Aiko"
 	},
-
 	{
 		"short_title": "LETTER II",
 		"title": "PERSONAL LETTER",
@@ -113,7 +94,6 @@ const DOCUMENTS: Array = [
 			+ "The screws are on the kitchen shelf.\n\n"
 			+ "Noriko"
 	},
-
 	{
 		"short_title": "LETTER III",
 		"title": "PERSONAL LETTER",
@@ -133,7 +113,6 @@ const DOCUMENTS: Array = [
 			+ "Write when you get the result.\n\n"
 			+ "Mother"
 	},
-
 	{
 		"short_title": "TELEGRAM",
 		"title": "HARBOUR TELEGRAM",
@@ -160,11 +139,6 @@ const DOCUMENTS: Array = [
 	}
 ]
 
-
-# =========================================================
-# STATE
-# =========================================================
-
 var player: CharacterBody2D
 
 var recovered_items: int = 0
@@ -173,18 +147,11 @@ var current_interaction: int = (
 	InteractionType.NONE
 )
 
-var modal: int = (
-	ModalType.NONE
-)
+var modal: int = ModalType.NONE
 
 var current_document: int = 0
 
 var elapsed: float = 0.0
-
-
-# =========================================================
-# CRISP SCREEN-SPACE SIGNAGE
-# =========================================================
 
 var sign_layer: CanvasLayer
 
@@ -198,25 +165,14 @@ var archive_prompt: Label
 var retry_prompt: Label
 var leave_prompt: Label
 
-
-# =========================================================
-# ARCHIVE UI
-# =========================================================
-
 var archive_layer: CanvasLayer
 
 var archive_title: Label
 var archive_record: Label
 var archive_body: RichTextLabel
-
 var no_items_label: Label
 
 var document_buttons: Array[Button] = []
-
-
-# =========================================================
-# CONFIRMATION UI
-# =========================================================
 
 var confirm_layer: CanvasLayer
 
@@ -224,30 +180,17 @@ var confirm_title: Label
 var confirm_body: Label
 var confirm_controls: Label
 
-
-# =========================================================
-# FADE
-# =========================================================
-
 var fade_layer: CanvasLayer
 var fade_rect: ColorRect
 
-
-# =========================================================
-# READY
-# =========================================================
 
 func _ready() -> void:
 	Input.set_mouse_mode(
 		Input.MOUSE_MODE_VISIBLE
 	)
 
-
 	if test_recovered_items >= 0:
-		recovered_items = (
-			test_recovered_items
-		)
-
+		recovered_items = test_recovered_items
 	else:
 		recovered_items = clampi(
 			Global.minigames_done,
@@ -255,135 +198,92 @@ func _ready() -> void:
 			4
 		)
 
-
 	_build_room()
-
 	_build_sign_layer()
-
 	_setup_player()
-
 	_build_archive_ui()
-
 	_build_confirmation_ui()
-
 	_build_fade_layer()
-
 	_update_archive_board()
 
-
-# =========================================================
-# PROCESS
-# =========================================================
 
 func _process(
 	delta: float
 ) -> void:
 	elapsed += delta
 
-
 	if player == null:
 		return
 
+	player.z_index = int(
+		round(
+			player.global_position.y
+			+ 15.0
+		)
+	)
 
 	if modal != ModalType.NONE:
 		return
 
-
 	_update_current_interaction()
-
 	_update_prompts()
-
 	_update_marker_pulse()
 
-
-# =========================================================
-# INTERACTION DETECTION
-# =========================================================
 
 func _update_current_interaction() -> void:
 	var position_now: Vector2 = (
 		player.global_position
 	)
 
-
-	var archive_distance: float = (
-		position_now.distance_to(
-			ARCHIVE_POINT
+	var feet_position: Vector2 = (
+		position_now
+		+ Vector2(
+			0.0,
+			15.0
 		)
 	)
-
-
-	var retry_distance: float = (
-		position_now.distance_to(
-			RETRY_POINT
-		)
-	)
-
-
-	var leave_distance: float = (
-		position_now.distance_to(
-			LEAVE_POINT
-		)
-	)
-
-
-	var closest: float = INF
-
 
 	current_interaction = (
 		InteractionType.NONE
 	)
 
-
-	if (
-		archive_distance
-		<= INTERACTION_DISTANCE
+	if RETRY_ZONE.has_point(
+		feet_position
 	):
-		closest = archive_distance
-
-		current_interaction = (
-			InteractionType.ARCHIVE
-		)
-
-
-	if (
-		retry_distance
-		<= INTERACTION_DISTANCE
-		and retry_distance < closest
-	):
-		closest = retry_distance
-
 		current_interaction = (
 			InteractionType.RETRY
 		)
 
+		return
 
-	if (
-		leave_distance
-		<= INTERACTION_DISTANCE
-		and leave_distance < closest
+	if LEAVE_ZONE.has_point(
+		feet_position
 	):
 		current_interaction = (
 			InteractionType.LEAVE
 		)
 
+		return
 
-# =========================================================
-# PROMPTS
-# =========================================================
-
+	if (
+		position_now.distance_to(
+			ARCHIVE_POINT
+		)
+		<= INTERACTION_DISTANCE
+	):
+		current_interaction = (
+			InteractionType.ARCHIVE
+		)
 func _update_prompts() -> void:
 	archive_prompt.visible = (
 		current_interaction
 		== InteractionType.ARCHIVE
 	)
 
-
 	retry_prompt.visible = (
 		current_interaction
 		== InteractionType.RETRY
 	)
-
 
 	leave_prompt.visible = (
 		current_interaction
@@ -399,15 +299,10 @@ func _update_marker_pulse() -> void:
 		) * 0.18
 	)
 
-
 	archive_marker.modulate.a = pulse
 	retry_marker.modulate.a = pulse
 	leave_marker.modulate.a = pulse
 
-
-# =========================================================
-# INPUT
-# =========================================================
 
 func _input(
 	event: InputEvent
@@ -417,18 +312,11 @@ func _input(
 	):
 		return
 
-
 	if not event.pressed:
 		return
 
-
 	if event.echo:
 		return
-
-
-	# =====================================================
-	# ARCHIVE
-	# =====================================================
 
 	if modal == ModalType.ARCHIVE:
 		if (
@@ -441,7 +329,6 @@ func _input(
 
 			return
 
-
 		if (
 			event.keycode == KEY_RIGHT
 			or event.keycode == KEY_D
@@ -451,7 +338,6 @@ func _input(
 			_next_document()
 
 			return
-
 
 		if (
 			event.keycode == KEY_LEFT
@@ -463,13 +349,7 @@ func _input(
 
 			return
 
-
 		return
-
-
-	# =====================================================
-	# TRY AGAIN CONFIRMATION
-	# =====================================================
 
 	if modal == ModalType.RETRY_CONFIRM:
 		if event.keycode == KEY_ESCAPE:
@@ -478,7 +358,6 @@ func _input(
 			_close_confirmation()
 
 			return
-
 
 		if (
 			event.keycode == KEY_SPACE
@@ -491,13 +370,7 @@ func _input(
 
 			return
 
-
 		return
-
-
-	# =====================================================
-	# LEAVE CONFIRMATION
-	# =====================================================
 
 	if modal == ModalType.LEAVE_CONFIRM:
 		if event.keycode == KEY_ESCAPE:
@@ -506,7 +379,6 @@ func _input(
 			_close_confirmation()
 
 			return
-
 
 		if (
 			event.keycode == KEY_SPACE
@@ -519,21 +391,13 @@ func _input(
 
 			return
 
-
 		return
-
 
 	if modal == ModalType.ENDING:
 		return
 
-
-	# =====================================================
-	# WORLD
-	# =====================================================
-
 	if event.keycode != KEY_SPACE:
 		return
-
 
 	match current_interaction:
 		InteractionType.ARCHIVE:
@@ -541,12 +405,10 @@ func _input(
 
 			_open_archive()
 
-
 		InteractionType.RETRY:
 			get_viewport().set_input_as_handled()
 
 			_open_retry_confirmation()
-
 
 		InteractionType.LEAVE:
 			get_viewport().set_input_as_handled()
@@ -554,15 +416,10 @@ func _input(
 			_open_leave_confirmation()
 
 
-# =========================================================
-# PLAYER
-# =========================================================
-
 func _setup_player() -> void:
 	player = get_node_or_null(
 		"Player"
 	) as CharacterBody2D
-
 
 	if player == null:
 		push_error(
@@ -571,18 +428,10 @@ func _setup_player() -> void:
 
 		return
 
-
 	player.position = PLAYER_SPAWN
 
-
-	# Keep the character above every room drawing.
-	player.z_index = 20
-
-
 	player.collision_layer = 1
-
-	player.collision_mask |= 1
-
+	player.collision_mask = 1
 
 	var player_collision := (
 		player.get_node_or_null(
@@ -591,33 +440,25 @@ func _setup_player() -> void:
 		as CollisionShape2D
 	)
 
-
 	if player_collision:
-		# Full body collision for this room.
-		#
-		# The old tiny feet collision allowed the head and
-		# torso to visually enter walls.
 		var shape := RectangleShape2D.new()
 
 		shape.size = Vector2(
-			18.0,
-			36.0
+			14.0,
+			10.0
 		)
-
 
 		player_collision.shape = shape
 
 		player_collision.position = Vector2(
 			0.0,
-			0.0
+			15.0
 		)
-
 
 	player.set(
 		"cur_dir",
 		"up"
 	)
-
 
 	if player.has_method(
 		"play_anim"
@@ -628,12 +469,7 @@ func _setup_player() -> void:
 		)
 
 
-# =========================================================
-# ROOM
-# =========================================================
-
 func _build_room() -> void:
-	# Background outside room.
 	_add_rect(
 		Rect2(
 			Vector2.ZERO,
@@ -643,8 +479,6 @@ func _build_room() -> void:
 		-20
 	)
 
-
-	# Outer shell.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -659,11 +493,6 @@ func _build_room() -> void:
 		Color("#111214"),
 		-12
 	)
-
-
-	# =====================================================
-	# FLOOR
-	# =====================================================
 
 	_add_rect(
 		Rect2(
@@ -680,8 +509,6 @@ func _build_room() -> void:
 		-10
 	)
 
-
-	# Floor tile seams.
 	for x in range(
 		70,
 		538,
@@ -705,7 +532,6 @@ func _build_room() -> void:
 			0.5,
 			-9
 		)
-
 
 	for y in range(
 		138,
@@ -731,11 +557,6 @@ func _build_room() -> void:
 			-9
 		)
 
-
-	# =====================================================
-	# TOP SOLID WALL
-	# =====================================================
-
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -748,11 +569,9 @@ func _build_room() -> void:
 			)
 		),
 		Color("#1d1d20"),
-		-5
+		106
 	)
 
-
-	# Inner face.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -765,11 +584,9 @@ func _build_room() -> void:
 			)
 		),
 		Color("#202022"),
-		-4
+		107
 	)
 
-
-	# Lower wall edge.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -782,13 +599,8 @@ func _build_room() -> void:
 			)
 		),
 		Color("#101012"),
-		-3
+		108
 	)
-
-
-	# =====================================================
-	# LEFT SOLID WALL BAY
-	# =====================================================
 
 	_add_rect(
 		Rect2(
@@ -802,9 +614,8 @@ func _build_room() -> void:
 			)
 		),
 		Color("#19191b"),
-		-5
+		192
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -818,11 +629,9 @@ func _build_room() -> void:
 			)
 		),
 		Color("#242222"),
-		-4
+		193
 	)
 
-
-	# Inner edge / thickness.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -835,13 +644,23 @@ func _build_room() -> void:
 			)
 		),
 		Color("#101012"),
-		-3
+		194
 	)
 
-
-	# =====================================================
-	# RIGHT SOLID WALL BAY
-	# =====================================================
+	_add_rect(
+		Rect2(
+			Vector2(
+				25,
+				182
+			),
+			Vector2(
+				120,
+				10
+			)
+		),
+		Color("#101012"),
+		195
+	)
 
 	_add_rect(
 		Rect2(
@@ -855,9 +674,8 @@ func _build_room() -> void:
 			)
 		),
 		Color("#19191b"),
-		-5
+		192
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -871,9 +689,8 @@ func _build_room() -> void:
 			)
 		),
 		Color("#242222"),
-		-4
+		193
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -887,13 +704,23 @@ func _build_room() -> void:
 			)
 		),
 		Color("#101012"),
-		-3
+		194
 	)
 
-
-	# =====================================================
-	# BOTTOM WALL
-	# =====================================================
+	_add_rect(
+		Rect2(
+			Vector2(
+				431,
+				182
+			),
+			Vector2(
+				120,
+				10
+			)
+		),
+		Color("#101012"),
+		195
+	)
 
 	_add_rect(
 		Rect2(
@@ -907,13 +734,8 @@ func _build_room() -> void:
 			)
 		),
 		Color("#18181a"),
-		-4
+		311
 	)
-
-
-	# =====================================================
-	# CENTRAL RUNNER
-	# =====================================================
 
 	_add_rect(
 		Rect2(
@@ -929,7 +751,6 @@ func _build_room() -> void:
 		Color("#382b29"),
 		-8
 	)
-
 
 	_add_rect_border(
 		Rect2(
@@ -952,18 +773,12 @@ func _build_room() -> void:
 		-7
 	)
 
-
-	# =====================================================
-	# BENCHES
-	# =====================================================
-
 	_build_bench(
 		Vector2(
 			155,
 			220
 		)
 	)
-
 
 	_build_bench(
 		Vector2(
@@ -972,17 +787,7 @@ func _build_room() -> void:
 		)
 	)
 
-
-	# =====================================================
-	# ARCHIVE BOARD
-	# =====================================================
-
 	_build_archive_board_visual()
-
-
-	# =====================================================
-	# SIDE WALL FRAMES
-	# =====================================================
 
 	_build_side_frame_visual(
 		Rect2(
@@ -994,9 +799,9 @@ func _build_room() -> void:
 				86,
 				56
 			)
-		)
+		),
+		196
 	)
-
 
 	_build_side_frame_visual(
 		Rect2(
@@ -1008,79 +813,88 @@ func _build_room() -> void:
 				86,
 				56
 			)
-		)
+		),
+		196
 	)
 
-
-	# =====================================================
-	# COLLISION
-	#
-	# These are deliberately a little larger than the
-	# visible walls so the sprite itself cannot visually
-	# enter them before physics stops the player.
-	# =====================================================
-
-	# Top wall.
 	_make_static_rect(
 		Rect2(
 			Vector2(
-				22,
+				18,
+				14
+			),
+			Vector2(
+				540,
+				92
+			)
+		)
+	)
+
+	_make_static_rect(
+		Rect2(
+			Vector2(
+				18,
+				106
+			),
+			Vector2(
+				20,
+				189
+			)
+		)
+	)
+
+	_make_static_rect(
+		Rect2(
+			Vector2(
+				538,
+				106
+			),
+			Vector2(
+				20,
+				189
+			)
+		)
+	)
+
+	_make_static_rect(
+		Rect2(
+			Vector2(
+				18,
+				295
+			),
+			Vector2(
+				540,
 				20
-			),
-			Vector2(
-				532,
-				96
 			)
 		)
 	)
 
-
-	# Left wall + retry bay.
 	_make_static_rect(
 		Rect2(
 			Vector2(
-				20,
-				92
+				25,
+				104
 			),
 			Vector2(
-				138,
-				112
+				120,
+				88
 			)
 		)
 	)
 
-
-	# Right wall + leave bay.
 	_make_static_rect(
 		Rect2(
 			Vector2(
-				418,
-				92
+				431,
+				104
 			),
 			Vector2(
-				138,
-				112
+				120,
+				88
 			)
 		)
 	)
 
-
-	# Bottom completely closed.
-	_make_static_rect(
-		Rect2(
-			Vector2(
-				20,
-				286
-			),
-			Vector2(
-				536,
-				30
-			)
-		)
-	)
-
-
-	# Bench collisions.
 	_make_static_rect(
 		Rect2(
 			Vector2(
@@ -1093,7 +907,6 @@ func _build_room() -> void:
 			)
 		)
 	)
-
 
 	_make_static_rect(
 		Rect2(
@@ -1109,12 +922,7 @@ func _build_room() -> void:
 	)
 
 
-# =========================================================
-# ARCHIVE VISUAL
-# =========================================================
-
 func _build_archive_board_visual() -> void:
-	# Subtle backing / glow.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -1132,11 +940,9 @@ func _build_archive_board_visual() -> void:
 			0.45,
 			0.10
 		),
-		0
+		109
 	)
 
-
-	# Frame.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -1149,11 +955,9 @@ func _build_archive_board_visual() -> void:
 			)
 		),
 		Color("#09090a"),
-		1
+		110
 	)
 
-
-	# Paper/display surface.
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -1166,9 +970,8 @@ func _build_archive_board_visual() -> void:
 			)
 		),
 		Color("#cec3a6"),
-		2
+		111
 	)
-
 
 	_add_rect_border(
 		Rect2(
@@ -1183,23 +986,19 @@ func _build_archive_board_visual() -> void:
 		),
 		Color("#76664d"),
 		1.0,
-		3
+		112
 	)
 
 
-# =========================================================
-# SIDE FRAME VISUAL
-# =========================================================
-
 func _build_side_frame_visual(
-	rect: Rect2
+	rect: Rect2,
+	depth: int
 ) -> void:
 	_add_rect(
 		rect,
 		Color("#0a0a0b"),
-		1
+		depth
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -1213,9 +1012,8 @@ func _build_side_frame_visual(
 			)
 		),
 		Color("#2a2725"),
-		2
+		depth + 1
 	)
-
 
 	_add_rect_border(
 		Rect2(
@@ -1230,18 +1028,17 @@ func _build_side_frame_visual(
 		),
 		Color("#6a5d49"),
 		1.0,
-		3
+		depth + 2
 	)
 
-
-# =========================================================
-# BENCH
-# =========================================================
 
 func _build_bench(
 	pos: Vector2
 ) -> void:
-	# Shadow.
+	var depth := int(
+		pos.y + 24.0
+	)
+
 	_add_rect(
 		Rect2(
 			pos + Vector2(
@@ -1259,11 +1056,9 @@ func _build_bench(
 			0,
 			0.28
 		),
-		0
+		depth - 3
 	)
 
-
-	# Seat.
 	_add_rect(
 		Rect2(
 			pos,
@@ -1273,11 +1068,9 @@ func _build_bench(
 			)
 		),
 		Color("#4c4137"),
-		1
+		depth
 	)
 
-
-	# Front lip.
 	_add_rect(
 		Rect2(
 			pos + Vector2(
@@ -1290,11 +1083,9 @@ func _build_bench(
 			)
 		),
 		Color("#332e29"),
-		2
+		depth + 1
 	)
 
-
-	# Legs.
 	_add_rect(
 		Rect2(
 			pos + Vector2(
@@ -1307,9 +1098,8 @@ func _build_bench(
 			)
 		),
 		Color("#201e1c"),
-		1
+		depth - 1
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -1323,18 +1113,9 @@ func _build_bench(
 			)
 		),
 		Color("#201e1c"),
-		1
+		depth - 1
 	)
 
-
-# =========================================================
-# CRISP SIGNAGE LAYER
-#
-# IMPORTANT:
-# These Labels are NOT children of the zoomed world.
-# They are screen-space, so Godot no longer scales the
-# text by 2x and makes it fuzzy.
-# =========================================================
 
 func _build_sign_layer() -> void:
 	sign_layer = CanvasLayer.new()
@@ -1344,11 +1125,6 @@ func _build_sign_layer() -> void:
 	add_child(
 		sign_layer
 	)
-
-
-	# =====================================================
-	# ARCHIVE
-	# =====================================================
 
 	var archive_title_label := _make_screen_label(
 		"KIYOSHIMA POSTAL ARCHIVE",
@@ -1366,16 +1142,13 @@ func _build_sign_layer() -> void:
 		Color("#29241c")
 	)
 
-
 	archive_title_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
-
 	archive_title_label.vertical_alignment = (
 		VERTICAL_ALIGNMENT_CENTER
 	)
-
 
 	archive_count_label = _make_screen_label(
 		"",
@@ -1393,16 +1166,13 @@ func _build_sign_layer() -> void:
 		Color("#625849")
 	)
 
-
 	archive_count_label.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
-
 	archive_count_label.vertical_alignment = (
 		VERTICAL_ALIGNMENT_CENTER
 	)
-
 
 	archive_marker = _make_screen_label(
 		"(i)",
@@ -1420,11 +1190,9 @@ func _build_sign_layer() -> void:
 		Color("#e3cf92")
 	)
 
-
 	archive_marker.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
-
 
 	archive_prompt = _make_screen_label(
 		"SPACE TO EXAMINE",
@@ -1442,17 +1210,11 @@ func _build_sign_layer() -> void:
 		Color("#eee1bb")
 	)
 
-
 	archive_prompt.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
 	archive_prompt.visible = false
-
-
-	# =====================================================
-	# TRY AGAIN
-	# =====================================================
 
 	var retry_title := _make_screen_label(
 		"TRY AGAIN",
@@ -1470,16 +1232,13 @@ func _build_sign_layer() -> void:
 		Color("#ddd2bb")
 	)
 
-
 	retry_title.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
-
 	retry_title.vertical_alignment = (
 		VERTICAL_ALIGNMENT_CENTER
 	)
-
 
 	var retry_subtitle := _make_screen_label(
 		"RETURN TO 17:53",
@@ -1497,11 +1256,9 @@ func _build_sign_layer() -> void:
 		Color("#908571")
 	)
 
-
 	retry_subtitle.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
-
 
 	retry_marker = _make_screen_label(
 		"(i)",
@@ -1519,11 +1276,9 @@ func _build_sign_layer() -> void:
 		Color("#d9c68d")
 	)
 
-
 	retry_marker.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
-
 
 	retry_prompt = _make_screen_label(
 		"SPACE  TRY AGAIN",
@@ -1541,17 +1296,11 @@ func _build_sign_layer() -> void:
 		Color("#eee1bb")
 	)
 
-
 	retry_prompt.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
 	retry_prompt.visible = false
-
-
-	# =====================================================
-	# LEAVE
-	# =====================================================
 
 	var leave_title := _make_screen_label(
 		"LEAVE",
@@ -1569,16 +1318,13 @@ func _build_sign_layer() -> void:
 		Color("#ddd2bb")
 	)
 
-
 	leave_title.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
 
-
 	leave_title.vertical_alignment = (
 		VERTICAL_ALIGNMENT_CENTER
 	)
-
 
 	var leave_subtitle := _make_screen_label(
 		"END GAME",
@@ -1596,11 +1342,9 @@ func _build_sign_layer() -> void:
 		Color("#908571")
 	)
 
-
 	leave_subtitle.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
-
 
 	leave_marker = _make_screen_label(
 		"(i)",
@@ -1618,11 +1362,9 @@ func _build_sign_layer() -> void:
 		Color("#d9c68d")
 	)
 
-
 	leave_marker.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
-
 
 	leave_prompt = _make_screen_label(
 		"SPACE  LEAVE",
@@ -1640,7 +1382,6 @@ func _build_sign_layer() -> void:
 		Color("#eee1bb")
 	)
 
-
 	leave_prompt.horizontal_alignment = (
 		HORIZONTAL_ALIGNMENT_CENTER
 	)
@@ -1648,17 +1389,12 @@ func _build_sign_layer() -> void:
 	leave_prompt.visible = false
 
 
-# =========================================================
-# WORLD -> SCREEN
-# =========================================================
-
 func _world_to_screen(
 	world_position: Vector2
 ) -> Vector2:
 	var viewport_size: Vector2 = (
 		get_viewport().get_visible_rect().size
 	)
-
 
 	var result: Vector2 = (
 		(
@@ -1669,8 +1405,6 @@ func _world_to_screen(
 		+ viewport_size / 2.0
 	)
 
-
-	# Keep text on whole pixels.
 	return Vector2(
 		round(result.x),
 		round(result.y)
@@ -1685,14 +1419,11 @@ func _make_screen_label(
 ) -> Label:
 	var label := Label.new()
 
-
 	label.text = text_value
-
 
 	label.position = _world_to_screen(
 		world_rect.position
 	)
-
 
 	label.size = Vector2(
 		round(
@@ -1705,35 +1436,26 @@ func _make_screen_label(
 		)
 	)
 
-
 	label.add_theme_font_size_override(
 		"font_size",
 		font_size
 	)
-
 
 	label.add_theme_color_override(
 		"font_color",
 		color
 	)
 
-
 	label.mouse_filter = (
 		Control.MOUSE_FILTER_IGNORE
 	)
-
 
 	sign_layer.add_child(
 		label
 	)
 
-
 	return label
 
-
-# =========================================================
-# ARCHIVE STATUS
-# =========================================================
 
 func _update_archive_board() -> void:
 	match recovered_items:
@@ -1763,15 +1485,10 @@ func _update_archive_board() -> void:
 			)
 
 
-# =========================================================
-# ARCHIVE UI
-# =========================================================
-
 func _build_archive_ui() -> void:
 	var viewport_size: Vector2 = (
 		get_viewport().get_visible_rect().size
 	)
-
 
 	archive_layer = CanvasLayer.new()
 
@@ -1780,7 +1497,6 @@ func _build_archive_ui() -> void:
 	add_child(
 		archive_layer
 	)
-
 
 	var dim := ColorRect.new()
 
@@ -1798,7 +1514,6 @@ func _build_archive_ui() -> void:
 		dim
 	)
 
-
 	var window := Panel.new()
 
 	window.position = Vector2(
@@ -1811,11 +1526,9 @@ func _build_archive_ui() -> void:
 		545
 	)
 
-
 	var window_style := StyleBoxFlat.new()
 
 	window_style.bg_color = Color("#171719")
-
 	window_style.border_color = Color("#665b49")
 
 	window_style.border_width_left = 1
@@ -1823,17 +1536,14 @@ func _build_archive_ui() -> void:
 	window_style.border_width_right = 1
 	window_style.border_width_bottom = 1
 
-
 	window.add_theme_stylebox_override(
 		"panel",
 		window_style
 	)
 
-
 	archive_layer.add_child(
 		window
 	)
-
 
 	var heading := Label.new()
 
@@ -1865,7 +1575,6 @@ func _build_archive_ui() -> void:
 		heading
 	)
 
-
 	var heading_rule := ColorRect.new()
 
 	heading_rule.position = Vector2(
@@ -1889,15 +1598,12 @@ func _build_archive_ui() -> void:
 		heading_rule
 	)
 
-
 	document_buttons.clear()
-
 
 	var available: int = mini(
 		recovered_items,
 		DOCUMENTS.size()
 	)
-
 
 	for i in range(
 		available
@@ -1906,11 +1612,12 @@ func _build_archive_ui() -> void:
 			DOCUMENTS[i]
 		)
 
-
 		var button := Button.new()
 
 		button.text = str(
-			document["short_title"]
+			document[
+				"short_title"
+			]
 		)
 
 		button.position = Vector2(
@@ -1927,7 +1634,6 @@ func _build_archive_ui() -> void:
 			Control.FOCUS_NONE
 		)
 
-
 		var normal := StyleBoxFlat.new()
 
 		normal.bg_color = Color("#202022")
@@ -1941,16 +1647,19 @@ func _build_archive_ui() -> void:
 
 		normal.border_width_bottom = 1
 
-
-		var hover := normal.duplicate()
+		var hover := (
+			normal.duplicate()
+			as StyleBoxFlat
+		)
 
 		hover.bg_color = Color("#302c26")
 
-
-		var pressed := normal.duplicate()
+		var pressed := (
+			normal.duplicate()
+			as StyleBoxFlat
+		)
 
 		pressed.bg_color = Color("#42392d")
-
 
 		button.add_theme_stylebox_override(
 			"normal",
@@ -1967,7 +1676,6 @@ func _build_archive_ui() -> void:
 			pressed
 		)
 
-
 		button.add_theme_font_size_override(
 			"font_size",
 			14
@@ -1978,13 +1686,11 @@ func _build_archive_ui() -> void:
 			Color("#c9bfaa")
 		)
 
-
 		button.pressed.connect(
 			_on_document_button_pressed.bind(
 				i
 			)
 		)
-
 
 		window.add_child(
 			button
@@ -1993,7 +1699,6 @@ func _build_archive_ui() -> void:
 		document_buttons.append(
 			button
 		)
-
 
 	var separator := ColorRect.new()
 
@@ -2018,7 +1723,6 @@ func _build_archive_ui() -> void:
 		separator
 	)
 
-
 	var paper := Panel.new()
 
 	paper.position = Vector2(
@@ -2031,18 +1735,15 @@ func _build_archive_ui() -> void:
 		395
 	)
 
-
 	var paper_style := StyleBoxFlat.new()
 
 	paper_style.bg_color = Color("#d8ceb5")
-
 	paper_style.border_color = Color("#8a7c62")
 
 	paper_style.border_width_left = 1
 	paper_style.border_width_top = 1
 	paper_style.border_width_right = 1
 	paper_style.border_width_bottom = 1
-
 
 	paper.add_theme_stylebox_override(
 		"panel",
@@ -2052,7 +1753,6 @@ func _build_archive_ui() -> void:
 	window.add_child(
 		paper
 	)
-
 
 	archive_title = Label.new()
 
@@ -2080,7 +1780,6 @@ func _build_archive_ui() -> void:
 		archive_title
 	)
 
-
 	archive_record = Label.new()
 
 	archive_record.position = Vector2(
@@ -2107,7 +1806,6 @@ func _build_archive_ui() -> void:
 		archive_record
 	)
 
-
 	var paper_rule := ColorRect.new()
 
 	paper_rule.position = Vector2(
@@ -2130,7 +1828,6 @@ func _build_archive_ui() -> void:
 	paper.add_child(
 		paper_rule
 	)
-
 
 	archive_body = RichTextLabel.new()
 
@@ -2171,7 +1868,6 @@ func _build_archive_ui() -> void:
 		archive_body
 	)
 
-
 	no_items_label = Label.new()
 
 	no_items_label.text = (
@@ -2211,7 +1907,6 @@ func _build_archive_ui() -> void:
 		no_items_label
 	)
 
-
 	var controls := Label.new()
 
 	controls.text = (
@@ -2247,27 +1942,18 @@ func _build_archive_ui() -> void:
 		controls
 	)
 
-
 	archive_layer.visible = false
 
 
-# =========================================================
-# OPEN ARCHIVE
-# =========================================================
-
 func _open_archive() -> void:
 	modal = ModalType.ARCHIVE
-
 
 	_set_player_locked(
 		true
 	)
 
-
 	sign_layer.visible = false
-
 	archive_layer.visible = true
-
 
 	if recovered_items <= 0:
 		archive_title.visible = false
@@ -2283,40 +1969,28 @@ func _open_archive() -> void:
 
 		no_items_label.visible = false
 
-
 		current_document = clampi(
 			current_document,
 			0,
 			recovered_items - 1
 		)
 
-
 		_show_document(
 			current_document
 		)
 
-
-# =========================================================
-# CLOSE ARCHIVE
-# =========================================================
 
 func _close_archive() -> void:
 	archive_layer.visible = false
 
 	sign_layer.visible = true
 
-
 	modal = ModalType.NONE
-
 
 	_set_player_locked(
 		false
 	)
 
-
-# =========================================================
-# DOCUMENT NAVIGATION
-# =========================================================
 
 func _show_document(
 	index: int
@@ -2326,10 +2000,8 @@ func _show_document(
 		DOCUMENTS.size()
 	)
 
-
 	if available <= 0:
 		return
-
 
 	current_document = clampi(
 		index,
@@ -2337,37 +2009,41 @@ func _show_document(
 		available - 1
 	)
 
-
 	var data: Dictionary = (
 		DOCUMENTS[
 			current_document
 		]
 	)
 
-
 	archive_title.text = str(
-		data["title"]
+		data[
+			"title"
+		]
 	)
 
 	archive_record.text = str(
-		data["archive"]
+		data[
+			"archive"
+		]
 	)
 
 	archive_body.text = str(
-		data["body"]
+		data[
+			"body"
+		]
 	)
-
 
 	archive_body.scroll_to_line(
 		0
 	)
 
-
 	for i in range(
 		document_buttons.size()
 	):
 		if i == current_document:
-			document_buttons[i].modulate = Color(
+			document_buttons[
+				i
+			].modulate = Color(
 				1.0,
 				0.91,
 				0.74,
@@ -2375,9 +2051,9 @@ func _show_document(
 			)
 
 		else:
-			document_buttons[i].modulate = (
-				Color.WHITE
-			)
+			document_buttons[
+				i
+			].modulate = Color.WHITE
 
 
 func _next_document() -> void:
@@ -2386,17 +2062,13 @@ func _next_document() -> void:
 		DOCUMENTS.size()
 	)
 
-
 	if amount <= 0:
 		return
 
-
 	current_document += 1
-
 
 	if current_document >= amount:
 		current_document = 0
-
 
 	_show_document(
 		current_document
@@ -2409,17 +2081,13 @@ func _previous_document() -> void:
 		DOCUMENTS.size()
 	)
 
-
 	if amount <= 0:
 		return
 
-
 	current_document -= 1
-
 
 	if current_document < 0:
 		current_document = amount - 1
-
 
 	_show_document(
 		current_document
@@ -2434,15 +2102,10 @@ func _on_document_button_pressed(
 	)
 
 
-# =========================================================
-# CONFIRM UI
-# =========================================================
-
 func _build_confirmation_ui() -> void:
 	var viewport_size: Vector2 = (
 		get_viewport().get_visible_rect().size
 	)
-
 
 	confirm_layer = CanvasLayer.new()
 
@@ -2451,7 +2114,6 @@ func _build_confirmation_ui() -> void:
 	add_child(
 		confirm_layer
 	)
-
 
 	var dim := ColorRect.new()
 
@@ -2469,7 +2131,6 @@ func _build_confirmation_ui() -> void:
 		dim
 	)
 
-
 	var panel := Panel.new()
 
 	panel.position = Vector2(
@@ -2482,11 +2143,9 @@ func _build_confirmation_ui() -> void:
 		245
 	)
 
-
 	var style := StyleBoxFlat.new()
 
 	style.bg_color = Color("#171719")
-
 	style.border_color = Color("#6b5e49")
 
 	style.border_width_left = 1
@@ -2494,17 +2153,14 @@ func _build_confirmation_ui() -> void:
 	style.border_width_right = 1
 	style.border_width_bottom = 1
 
-
 	panel.add_theme_stylebox_override(
 		"panel",
 		style
 	)
 
-
 	confirm_layer.add_child(
 		panel
 	)
-
 
 	confirm_title = Label.new()
 
@@ -2535,7 +2191,6 @@ func _build_confirmation_ui() -> void:
 	panel.add_child(
 		confirm_title
 	)
-
 
 	confirm_body = Label.new()
 
@@ -2575,7 +2230,6 @@ func _build_confirmation_ui() -> void:
 		confirm_body
 	)
 
-
 	confirm_controls = Label.new()
 
 	confirm_controls.position = Vector2(
@@ -2606,74 +2260,53 @@ func _build_confirmation_ui() -> void:
 		confirm_controls
 	)
 
-
 	confirm_layer.visible = false
 
 
-# =========================================================
-# TRY AGAIN CONFIRM
-# =========================================================
-
 func _open_retry_confirmation() -> void:
 	modal = ModalType.RETRY_CONFIRM
-
 
 	_set_player_locked(
 		true
 	)
 
-
 	sign_layer.visible = false
-
 
 	confirm_title.text = (
 		"TRY AGAIN?"
 	)
 
-
 	confirm_body.text = (
-		"Return to the beginning and run Route 6 again."
+		"Return to the final collection and run Route 6 again."
 	)
-
 
 	confirm_controls.text = (
 		"SPACE / ENTER  BEGIN AGAIN        ESC  RETURN"
 	)
 
-
 	confirm_layer.visible = true
 
 
-# =========================================================
-# LEAVE CONFIRM
-# =========================================================
-
 func _open_leave_confirmation() -> void:
 	modal = ModalType.LEAVE_CONFIRM
-
 
 	_set_player_locked(
 		true
 	)
 
-
 	sign_layer.visible = false
-
 
 	confirm_title.text = (
 		"LEAVE?"
 	)
 
-
 	confirm_body.text = (
 		"Leave the archive and end the game."
 	)
 
-
 	confirm_controls.text = (
 		"SPACE / ENTER  LEAVE        ESC  RETURN"
 	)
-
 
 	confirm_layer.visible = true
 
@@ -2683,90 +2316,56 @@ func _close_confirmation() -> void:
 
 	sign_layer.visible = true
 
-
 	modal = ModalType.NONE
-
 
 	_set_player_locked(
 		false
 	)
 
 
-# =========================================================
-# RESTART GAME
-# =========================================================
-
 func _restart_game() -> void:
 	modal = ModalType.ENDING
 
-
 	confirm_layer.visible = false
-
-
-	Global.minigames_done = 0
-	Global.lives = 4
-
-
-	if MusicManager.has_method(
-		"stop_gameplay"
-	):
-		MusicManager.call(
-			"stop_gameplay"
-		)
-
-
-	await _fade_to_black(
-		0.55
-	)
-
-
-	var main_scene_path: String = str(
-		ProjectSettings.get_setting(
-			"application/run/main_scene",
-			""
-		)
-	)
-
-
-	if main_scene_path.is_empty():
-		push_error(
-			"No project Main Scene is configured."
-		)
-
-		fade_rect.color.a = 0.0
-
-		sign_layer.visible = true
-
-		modal = ModalType.NONE
-
-
-		_set_player_locked(
-			false
-		)
-
-		return
-
-
-	get_tree().change_scene_to_file(
-		main_scene_path
-	)
-
-
-# =========================================================
-# END GAME
-# =========================================================
-
-func _end_game() -> void:
-	modal = ModalType.ENDING
-
-
-	confirm_layer.visible = false
-
 
 	_set_player_locked(
 		true
 	)
 
+	Global.minigames_done = 0
+	Global.lives = 4
+
+	var gameplay_bus: int = (
+		AudioServer.get_bus_index(
+			"GameplayMusicFX"
+		)
+	)
+
+	if gameplay_bus >= 0:
+		AudioServer.set_bus_mute(
+			gameplay_bus,
+			false
+		)
+
+	CUTSCENE_SCRIPT.request_mail_checkpoint()
+
+	await _fade_to_black(
+		0.55
+	)
+
+	get_tree().change_scene_to_file(
+		CUTSCENE_PATH
+	)
+
+
+func _end_game() -> void:
+	modal = ModalType.ENDING
+
+	confirm_layer.visible = false
+
+	_set_player_locked(
+		true
+	)
 
 	if MusicManager.has_method(
 		"stop_gameplay"
@@ -2775,30 +2374,22 @@ func _end_game() -> void:
 			"stop_gameplay"
 		)
 
-
 	await _fade_to_black(
 		1.0
 	)
-
 
 	await get_tree().create_timer(
 		0.35
 	).timeout
 
-
 	get_tree().quit()
 
-
-# =========================================================
-# PLAYER LOCK
-# =========================================================
 
 func _set_player_locked(
 	locked: bool
 ) -> void:
 	if player == null:
 		return
-
 
 	if locked:
 		player.velocity = Vector2.ZERO
@@ -2807,21 +2398,24 @@ func _set_player_locked(
 			false
 		)
 
+		if player.has_method(
+			"play_anim"
+		):
+			player.call(
+				"play_anim",
+				0
+			)
+
 	else:
 		player.set_physics_process(
 			true
 		)
 
 
-# =========================================================
-# FADE
-# =========================================================
-
 func _build_fade_layer() -> void:
 	var viewport_size: Vector2 = (
 		get_viewport().get_visible_rect().size
 	)
-
 
 	fade_layer = CanvasLayer.new()
 
@@ -2830,7 +2424,6 @@ func _build_fade_layer() -> void:
 	add_child(
 		fade_layer
 	)
-
 
 	fade_rect = ColorRect.new()
 
@@ -2848,7 +2441,6 @@ func _build_fade_layer() -> void:
 		Control.MOUSE_FILTER_IGNORE
 	)
 
-
 	fade_layer.add_child(
 		fade_rect
 	)
@@ -2859,7 +2451,6 @@ func _fade_to_black(
 ) -> void:
 	var tween := create_tween()
 
-
 	tween.set_trans(
 		Tween.TRANS_SINE
 	)
@@ -2868,7 +2459,6 @@ func _fade_to_black(
 		Tween.EASE_IN_OUT
 	)
 
-
 	tween.tween_property(
 		fade_rect,
 		"color:a",
@@ -2876,54 +2466,38 @@ func _fade_to_black(
 		duration
 	)
 
-
 	await tween.finished
 
-
-# =========================================================
-# STATIC COLLISION
-# =========================================================
 
 func _make_static_rect(
 	rect: Rect2
 ) -> void:
 	var body := StaticBody2D.new()
 
-
 	body.position = (
 		rect.position
 		+ rect.size / 2.0
 	)
 
-
 	body.collision_layer = 1
 	body.collision_mask = 0
 
-
 	var collision := CollisionShape2D.new()
-
 
 	var shape := RectangleShape2D.new()
 
 	shape.size = rect.size
 
-
 	collision.shape = shape
-
 
 	body.add_child(
 		collision
 	)
 
-
 	add_child(
 		body
 	)
 
-
-# =========================================================
-# DRAW RECT
-# =========================================================
 
 func _add_rect(
 	rect: Rect2,
@@ -2932,40 +2506,28 @@ func _add_rect(
 ) -> Polygon2D:
 	var polygon := Polygon2D.new()
 
-
 	polygon.polygon = PackedVector2Array([
 		rect.position,
-
 		rect.position + Vector2(
 			rect.size.x,
 			0
 		),
-
 		rect.position + rect.size,
-
 		rect.position + Vector2(
 			0,
 			rect.size.y
 		)
 	])
 
-
 	polygon.color = color
-
 	polygon.z_index = z
-
 
 	add_child(
 		polygon
 	)
 
-
 	return polygon
 
-
-# =========================================================
-# DRAW BORDER
-# =========================================================
 
 func _add_rect_border(
 	rect: Rect2,
@@ -2985,7 +2547,6 @@ func _add_rect_border(
 		z
 	)
 
-
 	_add_rect(
 		Rect2(
 			Vector2(
@@ -3003,7 +2564,6 @@ func _add_rect_border(
 		z
 	)
 
-
 	_add_rect(
 		Rect2(
 			rect.position,
@@ -3015,7 +2575,6 @@ func _add_rect_border(
 		color,
 		z
 	)
-
 
 	_add_rect(
 		Rect2(
@@ -3035,10 +2594,6 @@ func _add_rect_border(
 	)
 
 
-# =========================================================
-# DRAW LINE
-# =========================================================
-
 func _add_line(
 	from: Vector2,
 	to: Vector2,
@@ -3048,19 +2603,14 @@ func _add_line(
 ) -> void:
 	var line := Line2D.new()
 
-
 	line.points = PackedVector2Array([
 		from,
 		to
 	])
 
-
 	line.width = width
-
 	line.default_color = color
-
 	line.z_index = z
-
 
 	add_child(
 		line
